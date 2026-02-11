@@ -1,0 +1,67 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-naming-and-functions",
+      "prompt": "Review this Java code:\n\n```java\npublic class DataProcessor {\n    private List<int[]> theList = new ArrayList<>();\n    \n    public List<int[]> getThem() {\n        List<int[]> list1 = new ArrayList<>();\n        for (int[] x : theList)\n            if (x[0] == 4)\n                list1.add(x);\n        return list1;\n    }\n    \n    public void processData(String d, int t, boolean f, String n, int r) {\n        if (d != null && !d.isEmpty()) {\n            if (t > 0) {\n                if (f) {\n                    System.out.println(d);\n                    saveToDb(d, t, n);\n                    sendEmail(n, d);\n                    logResult(d, r);\n                }\n            }\n        }\n    }\n}\n```",
+      "expectations": [
+        "Flags poor naming using N1 (theList, getThem, list1, x, d, t, f, n, r)",
+        "Identifies F1: Too Many Arguments in processData (5 args)",
+        "Identifies F3: Flag Arguments (boolean f)",
+        "Points out the deeply nested if-statements (G29: Avoid Negative Conditionals or guard clauses)",
+        "Notes the function does multiple things: print, save, email, log (G30: Functions Should Do One Thing)",
+        "Flags G25: magic number 4 in the comparison",
+        "Suggests G28: Encapsulate Conditionals for the null/empty check",
+        "Provides a concrete refactored example with better names",
+        "References specific Clean Code heuristic codes"
+      ]
+    },
+    {
+      "id": "eval-02-comments-and-dead-code",
+      "prompt": "Review this Python code:\n\n```python\n# Created by John on 2019-03-15\n# Modified by Sarah on 2020-01-22\n# Modified by Mike on 2021-06-30\n\nclass UserManager:\n    def __init__(self):\n        self.users = {}  # dictionary of users\n    \n    # This method gets a user by their ID\n    def get_user(self, user_id):\n        # Check if user exists\n        if user_id in self.users:\n            # Return the user\n            return self.users[user_id]\n        # User not found\n        return None\n    \n    def create_user(self, name, email):\n        # import uuid\n        # id = uuid.uuid4()\n        id = len(self.users) + 1\n        self.users[id] = {\"name\": name, \"email\": email}\n        return id\n    \n    # def delete_user(self, user_id):\n    #     if user_id in self.users:\n    #         del self.users[user_id]\n    #         return True\n    #     return False\n    \n    # Increments counter\n    def increment_login_count(self, user_id):\n        if user_id in self.users:\n            if \"login_count\" not in self.users[user_id]:\n                self.users[user_id][\"login_count\"] = 0\n            self.users[user_id][\"login_count\"] += 1\n```",
+      "expectations": [
+        "Flags C1: Inappropriate Information — journal/attribution comments at the top belong in VCS",
+        "Identifies C3: Redundant Comments — '# dictionary of users', '# Check if user exists', '# Return the user'",
+        "Calls out C5: Commented-Out Code — both the uuid import and delete_user method",
+        "Notes that get_user returns None — Don't Return Null (Ch. 7)",
+        "Mentions shadowing Python's built-in `id`",
+        "Notes the class name 'UserManager' is vague (Ch. 2: avoid Manager/Processor names)",
+        "Suggests concrete refactored code"
+      ]
+    },    {
+      "id": "eval-03-clean-code-already",
+      "prompt": "Review this Kotlin code:\n\n```kotlin\ndata class Money(val amount: BigDecimal, val currency: Currency) {\n    \n    fun add(other: Money): Money {\n        require(currency == other.currency) {\n            \"Cannot add ${other.currency} to $currency\"\n        }\n        return Money(amount + other.amount, currency)\n    }\n    \n    fun isPositive(): Boolean = amount > BigDecimal.ZERO\n    \n    companion object {\n        fun zero(currency: Currency) = Money(BigDecimal.ZERO, currency)\n    }\n}\n\nenum class Currency { USD, EUR, UAH, GBP }\n```",
+      "expectations": [
+        "Recognizes this is already clean code and says so explicitly",
+        "Specifically praises: meaningful names (N1), small functions (Ch. 3), single responsibility",
+        "Praises use of data class, require for validation, companion factory, enum",
+        "Does NOT manufacture fake issues just to have something to say",
+        "May offer minor optional suggestions but clearly frames them as nitpick"
+      ]
+    },
+    {
+      "id": "eval-04-law-of-demeter-and-train-wrecks",
+      "prompt": "Review this Java code:\n\n```java\npublic class OrderService {\n    public String getCustomerCity(Order order) {\n        return order.getCustomer().getAddress().getCity().toUpperCase();\n    }\n    \n    public void processOrder(Order order) {\n        double discount = order.getCustomer().getMembership().getLevel().getDiscount();\n        double tax = order.getShippingAddress().getCountry().getTaxRate();\n        double total = order.getTotal() * (1 - discount) * (1 + tax);\n        \n        if (order.getCustomer().getPreferences().getNotificationSettings().isEmailEnabled()) {\n            emailService.send(order.getCustomer().getContactInfo().getEmail(), \n                \"Order processed: $\" + total);\n        }\n    }\n}\n```",
+      "expectations": [
+        "Flags G36: Avoid Transitive Navigation / Law of Demeter violations",
+        "Identifies train wreck chains (Ch. 6: Objects and Data Structures)",
+        "Notes Feature Envy (G14) — processOrder reaches deep into other objects",
+        "Suggests encapsulating behavior in the owning objects (e.g., order.calculateTotal(), customer.shouldNotifyByEmail())",
+        "Notes potential null pointer risks in long chains",
+        "Provides refactored example that respects Law of Demeter"
+      ]
+    },
+    {
+      "id": "eval-05-error-handling",
+      "prompt": "Review this Java code:\n\n```java\npublic class FileProcessor {\n    public static final int ERR_FILE_NOT_FOUND = -1;\n    public static final int ERR_PERMISSION = -2;\n    public static final int ERR_FORMAT = -3;\n    public static final int SUCCESS = 0;\n    \n    public int processFile(String path) {\n        File f = new File(path);\n        if (f == null) return ERR_FILE_NOT_FOUND;\n        if (!f.exists()) return ERR_FILE_NOT_FOUND;\n        if (!f.canRead()) return ERR_PERMISSION;\n        \n        String content = readFile(f);\n        if (content == null) return ERR_FORMAT;\n        \n        Record record = parseRecord(content);\n        if (record == null) return ERR_FORMAT;\n        \n        int result = saveRecord(record);\n        if (result != SUCCESS) return result;\n        \n        return SUCCESS;\n    }\n    \n    private String readFile(File f) {\n        try {\n            return new String(Files.readAllBytes(f.toPath()));\n        } catch (Exception e) {\n            return null;\n        }\n    }\n}\n```",
+      "expectations": [
+        "Flags error codes instead of exceptions (Ch. 7: Use Exceptions Rather Than Return Codes)",
+        "Identifies J3: Constants versus Enums — error codes should be an enum",
+        "Notes returning null from readFile (Don't Return Null)",
+        "Flags swallowing exceptions with catch(Exception e) return null",
+        "Points out the deeply nested error-code checking pattern",
+        "Notes 'new File(path)' never returns null, so the null check is G9: Dead Code",
+        "Suggests exception-based refactoring with meaningful exception classes"
+      ]
+    }
+  ]
+}
