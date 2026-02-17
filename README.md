@@ -72,7 +72,22 @@ cp -r skills/clean-code-reviewer ~/.codex/skills/
 
 | Skill | Description |
 |-------|-------------|
+| [animation-at-work](./animation-at-work/) | Apply web animation principles from Rachel Nabors' *Animation at Work* — human perception of motion, 12 principles of animation, and performance |
 | [clean-code-reviewer](./clean-code-reviewer/) | Reviews code against Robert C. Martin's *Clean Code* principles with heuristic codes (C1–C5, G1–G36, N1–N7, T1–T9) |
+| [data-intensive-patterns](./data-intensive-patterns/) | Patterns for reliable, scalable, and maintainable systems from Martin Kleppmann's *Designing Data-Intensive Applications* — storage engines, replication, partitioning, and transactions |
+| [data-pipelines](./data-pipelines/) | Data pipeline practices from James Densmore's *Data Pipelines Pocket Reference* — ingestion, streaming, transformation, and orchestration |
+| [design-patterns](./design-patterns/) | Apply and review GoF design patterns from *Head First Design Patterns* — creational, structural, and behavioral patterns |
+| [domain-driven-design](./domain-driven-design/) | Design and review software using patterns from Eric Evans' *Domain-Driven Design* — tactical and strategic patterns, and Ubiquitous Language |
+| [effective-java](./effective-java/) | Java best practices from Joshua Bloch's *Effective Java* (3rd Edition) — object creation, generics, enums, lambdas, and concurrency |
+| [effective-kotlin](./effective-kotlin/) | Best practices from Marcin Moskała's *Effective Kotlin* (2nd Ed) — safety, readability, reusability, and abstraction |
+| [kotlin-in-action](./kotlin-in-action/) | Practices from *Kotlin in Action* (2nd Ed) — functions, classes, lambdas, nullability, and coroutines |
+| [lean-startup](./lean-startup/) | Practices from Eric Ries' *The Lean Startup* — MVP testing, validated learning, Build-Measure-Learn loop, and pivots |
+| [microservices-patterns](./microservices-patterns/) | Expert guidance on microservices patterns from Chris Richardson's *Microservices Patterns* — decomposition, sagas, API gateways, event sourcing, CQRS, and service mesh |
+| [refactoring-ui](./refactoring-ui/) | UI design principles from *Refactoring UI* by Adam Wathan & Steve Schoger — visual hierarchy, layout, typography, and color |
+| [storytelling-with-data](./storytelling-with-data/) | Data visualization and storytelling from Cole Nussbaumer Knaflic's *Storytelling with Data* — effective visuals, decluttering, and narrative structure |
+| [system-design-interview](./system-design-interview/) | System design principles from Alex Xu's *System Design Interview* — scaling, estimation, and real-world system designs |
+| [using-asyncio-python](./using-asyncio-python/) | Asyncio practices from Caleb Hattingh's *Using Asyncio in Python* — coroutines, event loop, tasks, and signal handling |
+| [web-scraping-python](./web-scraping-python/) | Web scraping practices from Ryan Mitchell's *Web Scraping with Python* — BeautifulSoup, Scrapy, and data storage |
 
 ## License
 
