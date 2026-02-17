@@ -89,6 +89,7 @@ cp -r skills/effective-kotlin /path/to/project/.claude/skills/
 | [data-pipelines](./data-pipelines/) | Data pipeline practices from James Densmore's *Data Pipelines Pocket Reference* — ingestion, streaming, transformation, and orchestration |
 | [design-patterns](./design-patterns/) | Apply and review GoF design patterns from *Head First Design Patterns* — creational, structural, and behavioral patterns |
 | [domain-driven-design](./domain-driven-design/) | Design and review software using patterns from Eric Evans' *Domain-Driven Design* — tactical and strategic patterns, and Ubiquitous Language |
+| [effective-python](./effective-python-skill/) | Python best practices from Brett Slatkin's *Effective Python* (2nd Edition) — Pythonic thinking, functions, classes, concurrency, and testing |
 | [effective-java](./effective-java/) | Java best practices from Joshua Bloch's *Effective Java* (3rd Edition) — object creation, generics, enums, lambdas, and concurrency |
 | [effective-kotlin](./effective-kotlin/) | Best practices from Marcin Moskała's *Effective Kotlin* (2nd Ed) — safety, readability, reusability, and abstraction |
 | [kotlin-in-action](./kotlin-in-action/) | Practices from *Kotlin in Action* (2nd Ed) — functions, classes, lambdas, nullability, and coroutines |
