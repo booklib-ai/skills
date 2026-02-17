@@ -18,6 +18,9 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Set version from tag
+        run: npm version ${GITHUB_REF_NAME#v} --no-git-tag-version
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
