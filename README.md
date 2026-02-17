@@ -57,16 +57,16 @@ Instructions for the AI agent...
 
 ```bash
 # Add a single skill to your current project
-npx @agent-skills/library add effective-kotlin
+npx @booklib/skills add effective-kotlin
 
 # Add all skills to your current project
-npx @agent-skills/library add --all
+npx @booklib/skills add --all
 
 # Add globally (available in all projects)
-npx @agent-skills/library add --all --global
+npx @booklib/skills add --all --global
 
 # List available skills
-npx @agent-skills/library list
+npx @booklib/skills list
 ```
 
 Skills are installed to `.claude/skills/` in your project (or `~/.claude/skills/` with `--global`).

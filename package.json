@@ -1,5 +1,5 @@
 {
-  "name": "@agent-skills/library",
+  "name": "@booklib/skills",
   "version": "1.0.0",
   "description": "Book knowledge distilled into structured AI skills for Claude Code and other AI assistants",
   "bin": {
