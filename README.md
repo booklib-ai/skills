@@ -51,21 +51,32 @@ description: When to trigger this skill and what it does
 Instructions for the AI agent...
 ```
 
-## Usage
+## Installation
 
-### Claude (claude.ai / Claude Desktop)
-Upload skill folders to your project or reference them in your workspace.
+### via npm (recommended)
 
-### Claude Code
 ```bash
-# Copy skills to your project
-cp -r skills/clean-code-reviewer /path/to/project/.claude/skills/
+# Add a single skill to your current project
+npx @zlstas/skills add effective-kotlin
+
+# Add all skills to your current project
+npx @zlstas/skills add --all
+
+# Add globally (available in all projects)
+npx @zlstas/skills add --all --global
+
+# List available skills
+npx @zlstas/skills list
 ```
 
-### Codex CLI
+Skills are installed to `.claude/skills/` in your project (or `~/.claude/skills/` with `--global`).
+
+### Manual
+
 ```bash
-# Copy to Codex skills directory
-cp -r skills/clean-code-reviewer ~/.codex/skills/
+# Clone and copy a skill directly
+git clone https://github.com/ZLStas/skills.git
+cp -r skills/effective-kotlin /path/to/project/.claude/skills/
 ```
 
 ## Skills

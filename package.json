@@ -1,0 +1,17 @@
+{
+  "name": "@zlstas/skills",
+  "version": "1.0.0",
+  "description": "Book knowledge distilled into structured AI skills for Claude Code and other AI assistants",
+  "bin": {
+    "skills": "./bin/skills.js"
+  },
+  "keywords": ["claude", "claude-code", "ai", "skills", "agent-skills"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZLStas/skills.git"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
