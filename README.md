@@ -1,6 +1,6 @@
 # 🧠 Skills
 
-Personal collection of custom AI agent skills for Claude, Codex, and other AI assistants.
+Book knowledge distilled into structured AI skills — each skill packages expert practices from a specific book into a reusable prompt that AI agents can apply to code generation, code review, and design decisions.
 
 Each skill is a self-contained folder with a `SKILL.md` file containing instructions and metadata that AI agents use to perform specialized tasks.
 
