@@ -1,6 +1,13 @@
 # Skill Quality Checklist
 
-A reference for evaluating skill completeness. Skills earn badges based on how many criteria they meet.
+Skills earn badges based on how many criteria they meet. The CLI enforces this automatically:
+
+```bash
+npx @booklib/skills check effective-kotlin     # check one skill
+npx @booklib/skills check --all                # summary for all skills
+npx @booklib/skills eval effective-kotlin      # run evals against Claude (needs ANTHROPIC_API_KEY)
+npx @booklib/skills eval effective-kotlin --id=eval-01-...  # run one eval
+```
 
 ---
 

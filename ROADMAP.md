@@ -32,3 +32,5 @@
 - [x] Expand each skill to include `references/` docs with deeper content
 - [ ] Add `scripts/` with reusable automation where applicable
 - [x] Create a "skill quality checklist" and badge system for completeness (`QUALITY.md`)
+- [x] `skills check <name>` — automated quality validator (Bronze/Silver/Gold/Platinum)
+- [x] `skills eval <name>` — eval runner against Claude API (needs `ANTHROPIC_API_KEY`)
