@@ -1,0 +1,43 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-synchronous-rest-no-event-log",
+      "prompt": "Review this microservices architecture description and pseudo-code:\n\n```\nSystem: E-commerce order processing\nServices: OrderService, InventoryService, PaymentService, NotificationService\n\nFlow (all synchronous REST over HTTP):\n\n# OrderService.place_order()\nPOST /orders  →  validates cart\n               →  GET /inventory/{sku}  (blocks on InventoryService response)\n               →  POST /inventory/reserve  (blocks, decrements stock)\n               →  POST /payments/charge  (blocks on PaymentService)\n               →  POST /notifications/send  (blocks on NotificationService)\n               →  INSERT orders (status='CONFIRMED') into orders_db\n               →  return 201\n\n# If PaymentService times out:\n#   - inventory already reserved, order not yet written\n#   - caller gets 504, retries POST /orders\n#   - inventory reserved again (double reservation)\n\n# InventoryService\nGET /inventory/{sku}  →  SELECT stock FROM inventory WHERE sku=?\nPOST /inventory/reserve  →  UPDATE inventory SET stock=stock-qty WHERE sku=?\n\n# Shared database: orders_db is directly accessed by both OrderService\n# and InventoryService for reporting queries\n```",
+      "expectations": [
+        "Flags the fully synchronous REST chain as a distributed systems anti-pattern: a failure or timeout in any downstream service leaves the system in an inconsistent state (Ch 8: partial failures, timeouts, retries)",
+        "Identifies the double-reservation bug as a direct consequence of no idempotency on POST /inventory/reserve; recommends idempotency keys on all mutating endpoints (Ch 8: idempotent operations everywhere)",
+        "Flags the absence of an event log or write-ahead log: there is no source of truth to replay from if a service crashes mid-flow (Ch 11: event sourcing, log as source of truth)",
+        "Flags shared database access between OrderService and InventoryService as shared mutable state across services, violating service autonomy (Ch 12: shared mutable state across services anti-pattern)",
+        "Recommends replacing the synchronous chain with an event-driven approach: publish an OrderPlaced event, have downstream services react asynchronously (Ch 11: stream processing, event-driven)",
+        "Recommends the transactional outbox pattern to atomically write the order and publish the event in one local transaction (Ch 11: CDC, transactional outbox)",
+        "Notes that NotificationService is particularly ill-suited for the synchronous chain since a notification failure should not roll back a payment"
+      ]
+    },
+    {
+      "id": "eval-02-schema-without-access-patterns",
+      "prompt": "Review this database schema design:\n\n```sql\n-- Proposed schema for a social media analytics platform\n-- Requirements: show user activity feeds, compute engagement scores,\n-- support time-range queries on posts, and generate daily digest emails\n\nCREATE TABLE users (\n    id          BIGINT PRIMARY KEY,\n    username    VARCHAR(50),\n    email       VARCHAR(255),\n    created_at  TIMESTAMP\n);\n\nCREATE TABLE posts (\n    id          BIGINT PRIMARY KEY,\n    user_id     BIGINT REFERENCES users(id),\n    content     TEXT,\n    created_at  TIMESTAMP\n);\n\nCREATE TABLE events (\n    id          BIGINT PRIMARY KEY,\n    post_id     BIGINT REFERENCES posts(id),\n    user_id     BIGINT REFERENCES users(id),\n    event_type  VARCHAR(20),  -- 'like', 'comment', 'share', 'view'\n    occurred_at TIMESTAMP\n);\n\n-- All analytics queries will be run against these three tables via JOINs\n-- Indexes: only the primary keys above\n```",
+      "expectations": [
+        "Flags the absence of secondary indexes for the primary access patterns: time-range queries on posts (created_at) and per-user activity (user_id + created_at) will require full table scans (Ch 3: indexing strategies, B-tree vs LSM-tree, DDIA Chapter 3)",
+        "Identifies the schema is designed around normalization, not around read patterns; for analytics (read-heavy) workloads, this forces expensive multi-table JOINs on every query (Ch 2: document model vs relational model, denormalization for read-heavy workloads)",
+        "Flags that the `events` table mixing four different event types in one table with no partitioning will become a hot write target and a slow scan table as it grows (Ch 6: partitioning to spread load)",
+        "Notes there is no derived/materialized view for engagement scores, meaning every score computation re-scans all events; recommends pre-computed aggregates or a materialized view updated via CDC (Ch 11: derived data, CQRS)",
+        "Flags that the schema has no time-based partitioning on the `events` table despite time-range queries being a stated requirement (Ch 6: partitioning by key range for range scan efficiency)",
+        "Recommends separating the OLTP write path from the OLAP analytics read path, using CDC or batch export to feed an analytics store (Ch 10: batch processing, OLTP vs OLAP separation)"
+      ]
+    },
+    {
+      "id": "eval-03-well-designed-event-sourced-system",
+      "prompt": "Review this event-sourced order system design:\n\n```python\n# Event definitions\n@dataclass(frozen=True)\nclass OrderPlaced:\n    order_id: str\n    customer_id: str\n    items: tuple  # immutable list of (sku, qty, price)\n    occurred_at: datetime\n    event_id: str = field(default_factory=lambda: str(uuid4()))\n\n@dataclass(frozen=True)\nclass OrderShipped:\n    order_id: str\n    tracking_number: str\n    occurred_at: datetime\n    event_id: str = field(default_factory=lambda: str(uuid4()))\n\n@dataclass(frozen=True)\nclass OrderCancelled:\n    order_id: str\n    reason: str\n    occurred_at: datetime\n    event_id: str = field(default_factory=lambda: str(uuid4()))\n\n# Append-only event store\nclass EventStore:\n    def append(self, stream_id: str, events: list, expected_version: int) -> None:\n        \"\"\"Append events with optimistic concurrency check.\"\"\"\n        ...\n\n    def load(self, stream_id: str) -> list:\n        \"\"\"Load all events for a stream in order.\"\"\"\n        ...\n\n# Aggregate rebuilt from events\nclass Order:\n    def __init__(self):\n        self.status = None\n        self.items = []\n        self._version = 0\n\n    @classmethod\n    def from_events(cls, events: list) -> 'Order':\n        order = cls()\n        for event in events:\n            order._apply(event)\n        return order\n\n    def _apply(self, event):\n        match event:\n            case OrderPlaced(items=items):\n                self.status = 'placed'\n                self.items = list(items)\n            case OrderShipped():\n                self.status = 'shipped'\n            case OrderCancelled():\n                self.status = 'cancelled'\n        self._version += 1\n\n# Idempotent consumer for search index projection\nclass SearchIndexProjection:\n    def handle(self, event, event_id: str) -> None:\n        if self._already_processed(event_id):\n            return\n        # update search index\n        self._mark_processed(event_id)\n```",
+      "expectations": [
+        "Recognizes this is a well-designed event-sourced system and says so explicitly",
+        "Praises the append-only event store with optimistic concurrency control via `expected_version` preventing lost updates (Ch 7: transaction isolation, write conflicts)",
+        "Praises rebuilding aggregate state from events via `from_events` — the event log is the source of truth (Ch 11: event sourcing, log-centric architecture)",
+        "Praises frozen dataclasses for events ensuring immutability, which is correct for an append-only log (Ch 11: immutable events)",
+        "Praises the idempotent consumer with deduplication by `event_id` in `SearchIndexProjection` making the projection safe to replay (Ch 11: idempotent consumers, exactly-once semantics)",
+        "Praises the separation of the write model (Order aggregate) from the read model (SearchIndexProjection) as CQRS (Ch 11: CQRS, derived data)",
+        "Does NOT manufacture issues to appear thorough; any suggestions are explicitly framed as minor optional improvements",
+        "May suggest snapshotting for long-lived streams as a performance optimization, but frames it as a future concern, not a current violation"
+      ]
+    }
+  ]
+}

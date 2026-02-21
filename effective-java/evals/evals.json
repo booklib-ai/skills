@@ -1,0 +1,46 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-public-mutable-fields-no-builder",
+      "prompt": "Review this Java code:\n\n```java\npublic class HttpRequest {\n    public String url;\n    public String method;\n    public Map<String, String> headers;\n    public String body;\n    public int timeoutMs;\n    public boolean followRedirects;\n    public int maxRetries;\n    public String authToken;\n    public boolean verifySsl;\n    public String proxyHost;\n    public int proxyPort;\n    \n    public HttpRequest(String url, String method, Map<String, String> headers,\n                       String body, int timeoutMs, boolean followRedirects,\n                       int maxRetries, String authToken, boolean verifySsl,\n                       String proxyHost, int proxyPort) {\n        this.url = url;\n        this.method = method;\n        this.headers = headers;\n        this.body = body;\n        this.timeoutMs = timeoutMs;\n        this.followRedirects = followRedirects;\n        this.maxRetries = maxRetries;\n        this.authToken = authToken;\n        this.verifySsl = verifySsl;\n        this.proxyHost = proxyHost;\n        this.proxyPort = proxyPort;\n    }\n}\n\n// Typical usage:\nHttpRequest req = new HttpRequest(\n    \"https://api.example.com/data\",\n    \"POST\",\n    new HashMap<>(),\n    \"{\\\"key\\\": \\\"value\\\"}\",\n    5000,\n    true,\n    3,\n    null,\n    true,\n    null,\n    0\n);\nreq.headers.put(\"Content-Type\", \"application/json\");\n```",
+      "expectations": [
+        "Flags Item 2 (Builder pattern): 11-parameter constructor is a telescoping constructor — callers cannot tell what the 6th argument (boolean) means at the call site",
+        "Flags Item 16 (minimize accessibility): all fields are public — any code can mutate url, method, headers after construction",
+        "Flags Item 17 (minimize mutability): HttpRequest should be immutable — a request is a value that shouldn't change after construction",
+        "Flags Item 50 (defensive copies): headers is a mutable Map passed directly — external code can mutate it after the fact; req.headers.put() after construction is a symptom",
+        "Recommends the Builder pattern with a fluent API: HttpRequest.builder(url).method(\"POST\").timeout(5000).build()",
+        "Notes that the two boolean parameters (followRedirects, verifySsl) at positions 6 and 9 are especially dangerous — easy to swap without compile-time error",
+        "Suggests making all fields private final, constructor private, and providing only getters",
+        "May note that modern Java could use a Record for simpler cases, but Builder is more appropriate here due to many optional fields"
+      ]
+    },
+    {
+      "id": "eval-02-raw-types-generics",
+      "prompt": "Review this Java code:\n\n```java\npublic class EventBus {\n    private Map subscribers = new HashMap();\n    \n    public void subscribe(String eventType, Object handler) {\n        List handlers = (List) subscribers.get(eventType);\n        if (handlers == null) {\n            handlers = new ArrayList();\n            subscribers.put(eventType, handlers);\n        }\n        handlers.add(handler);\n    }\n    \n    public void publish(String eventType, Object event) {\n        List handlers = (List) subscribers.get(eventType);\n        if (handlers != null) {\n            for (Object handler : handlers) {\n                try {\n                    // Cast handler to expected type and call it\n                    ((java.util.function.Consumer) handler).accept(event);\n                } catch (ClassCastException e) {\n                    System.err.println(\"Handler type mismatch for event: \" + eventType);\n                }\n            }\n        }\n    }\n    \n    public List getHandlersForEvent(String eventType) {\n        return (List) subscribers.get(eventType);\n    }\n}\n\n// Usage:\nEventBus bus = new EventBus();\nbus.subscribe(\"USER_CREATED\", (Consumer<String>) name -> System.out.println(\"User created: \" + name));\nbus.subscribe(\"USER_CREATED\", (Consumer<Integer>) id -> System.out.println(\"ID: \" + id)); // Wrong type, no compile error\nbus.publish(\"USER_CREATED\", \"Alice\"); // Second handler will ClassCastException at runtime\n```",
+      "expectations": [
+        "Flags Item 26 (no raw types): Map, HashMap, List, ArrayList, and Consumer are all used as raw types — the entire class loses type safety",
+        "Explains the consequence: the second bus.subscribe() with Consumer<Integer> compiles silently but causes ClassCastException at runtime — exactly the bug raw types enable",
+        "Notes that catching ClassCastException to handle type mismatches is a design smell that would disappear with proper generics",
+        "Recommends a generic EventBus<T> or a type-safe subscriber model using Class<T> as the key instead of String",
+        "Suggests a typed design: subscribe(Class<T> eventType, Consumer<T> handler) with Map<Class<?>, List<Consumer<?>>> subscribers",
+        "Notes that getHandlersForEvent returns a raw List — callers cannot know the element type at compile time",
+        "May mention Item 27 (eliminate unchecked warnings): this code would generate many unchecked cast warnings that are being suppressed or ignored",
+        "Notes that String event type keys are fragile — typos cause silent misses; Class<T> as the key is self-documenting and refactoring-safe"
+      ]
+    },
+    {
+      "id": "eval-03-immutable-value-class",
+      "prompt": "Review this Java code:\n\n```java\npublic final class EmailAddress {\n    private final String localPart;\n    private final String domain;\n    \n    private EmailAddress(String localPart, String domain) {\n        this.localPart = localPart;\n        this.domain = domain;\n    }\n    \n    public static EmailAddress of(String email) {\n        Objects.requireNonNull(email, \"email must not be null\");\n        String trimmed = email.trim().toLowerCase(Locale.ROOT);\n        int atIndex = trimmed.indexOf('@');\n        if (atIndex <= 0 || atIndex == trimmed.length() - 1) {\n            throw new IllegalArgumentException(\"Invalid email address: \" + email);\n        }\n        String local = trimmed.substring(0, atIndex);\n        String dom = trimmed.substring(atIndex + 1);\n        return new EmailAddress(local, dom);\n    }\n    \n    public String getLocalPart() { return localPart; }\n    public String getDomain() { return domain; }\n    \n    public String toCanonicalString() {\n        return localPart + \"@\" + domain;\n    }\n    \n    @Override\n    public boolean equals(Object o) {\n        if (this == o) return true;\n        if (!(o instanceof EmailAddress)) return false;\n        EmailAddress that = (EmailAddress) o;\n        return localPart.equals(that.localPart) && domain.equals(that.domain);\n    }\n    \n    @Override\n    public int hashCode() {\n        return Objects.hash(localPart, domain);\n    }\n    \n    @Override\n    public String toString() {\n        return toCanonicalString();\n    }\n}\n```",
+      "expectations": [
+        "Recognizes this as a well-designed immutable value class and says so explicitly",
+        "Praises Item 17 (minimize mutability): class is final, all fields are private final, no setters",
+        "Praises Item 1 (static factory method): EmailAddress.of() gives a meaningful name, allows validation before construction, and can potentially cache instances",
+        "Praises Item 49 (parameter validation): uses Objects.requireNonNull and throws IllegalArgumentException with useful context",
+        "Praises Items 10-12 (equals/hashCode/toString contract): properly overridden, equals checks instanceof, hashCode uses Objects.hash, toString returns a useful representation",
+        "Praises normalization in the factory: trim() and toLowerCase() ensure canonical representation, meaning EmailAddress.of(\"USER@Example.COM\") equals EmailAddress.of(\"user@example.com\")",
+        "Does NOT manufacture fake issues just to have something to say",
+        "May offer minor optional suggestions (e.g., more thorough RFC-5321 validation, caching for common domains, a Java Record equivalent in newer Java versions) but clearly frames them as enhancements"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-naive-url-shortener",
+      "prompt": "I need to design a URL shortener service like bit.ly. Here's my design:\n\nThe system has a single server with a MySQL database. When a user submits a long URL, we generate a random 6-character short code, store the mapping in a `urls` table with columns (short_code, long_url, created_at), and return the short URL. When someone visits the short URL, we look up the long URL in the database and do a 302 redirect.\n\nFor the database:\n```sql\nCREATE TABLE urls (\n  short_code VARCHAR(6) PRIMARY KEY,\n  long_url    TEXT NOT NULL,\n  created_at  TIMESTAMP DEFAULT NOW()\n);\n```\n\nThe application is a simple Node.js Express server that handles both write (shorten) and read (redirect) traffic on the same process. I think this will work fine for our use case.",
+      "expectations": [
+        "Calls out the absence of any back-of-envelope estimation before designing (Ch 2 / Ch 3): we don't know the QPS, storage needs, or read/write ratio — the design can't be validated without these numbers",
+        "Identifies the single point of failure: one server, one database — any failure takes down the entire service",
+        "Flags missing caching (Ch 1): URL redirects are extremely read-heavy (estimated 100:1 read/write ratio in the book's example); a Redis cache in front of the DB would handle the vast majority of redirect lookups without hitting MySQL",
+        "Flags no CDN or load balancing (Ch 1): with a single Node.js process, the service cannot scale horizontally",
+        "Questions the random collision strategy: random 6-character codes will have increasing collision probability as the table grows — needs a collision-resistant ID generation strategy (base-62 encoding of auto-increment ID, or a dedicated ID generator per Ch 7/8)",
+        "Notes that 302 redirect means the browser does NOT cache the redirect — every click hits the server again; 301 is cacheable and reduces load for stable URLs (Ch 8 covers this trade-off explicitly)",
+        "Flags no analytics/expiry fields: typical URL shorteners need click counts, expiry dates, user ownership — the schema has none of these",
+        "Recommends at minimum: back-of-envelope estimate first, Redis cache for redirects, read replicas for the DB, load balancer, and a more robust ID generation approach"
+      ]
+    },
+    {
+      "id": "eval-02-premature-optimization-no-estimation",
+      "prompt": "I want to build a notification system (like push notifications for a mobile app). Before designing it, I've decided the system needs:\n\n1. A Kafka cluster with 50 partitions for notification events\n2. A Cassandra cluster with 6 nodes for storing notification history\n3. A Redis cluster in active-active mode across 3 data centers\n4. A Kubernetes cluster with auto-scaling pods for the notification workers\n5. A separate microservice for each notification channel (push, SMS, email, in-app)\n6. A GraphQL subscription API for real-time notification delivery\n7. Consistent hashing for distributing notifications across worker pods\n\nThe app currently has about 500 registered users and we send maybe 200 notifications per day.",
+      "expectations": [
+        "Calls out vanity scaling (Ch 2): 500 users sending 200 notifications per day is roughly 0.002 QPS — this is trivially handled by a single server with a simple database; none of the proposed infrastructure is justified",
+        "References the principle from Ch 2: scaling decisions must be based on back-of-envelope estimation, not intuition or aspiration",
+        "Calculates or estimates the actual load: 200 notifications/day = ~8/hour = ~0.002/second — a SQLite database on a $5 server would handle this with room to spare",
+        "Notes that the proposed stack adds enormous operational complexity: Kafka, Cassandra, Redis cluster, Kubernetes, and multiple microservices all require dedicated expertise to operate, monitor, and debug",
+        "Identifies this as the 'vanity scaling' anti-pattern explicitly called out in the SKILL.md review checklist",
+        "Recommends a design appropriate for the actual scale: a single service, a relational database (Postgres), an email/SMS provider SDK, and a simple job queue (like BullMQ or a DB-backed worker) — then scale when metrics demand it",
+        "Notes that the 4-step framework (Ch 3) requires establishing scope and estimating load BEFORE proposing architecture — skipping estimation leads to over-engineered designs like this one"
+      ]
+    },
+    {
+      "id": "eval-03-good-system-design-proposal",
+      "prompt": "Design proposal for a news feed system (like Twitter's home timeline):\n\n**Step 1 — Requirements & Estimation**\n- Functional: users follow others, posts appear in follower feeds, feeds are reverse-chronological\n- Non-functional: 500ms p99 feed load, eventual consistency acceptable, 10M DAU\n- Estimation: 10M DAU × 2 feed loads/day = 20M reads/day ≈ 230 QPS reads; 10M DAU × 0.1 posts/day = 1M writes/day ≈ 12 QPS writes; read/write ratio ≈ 20:1\n- Storage: 1M posts/day × 200 bytes = 200MB/day ≈ 70GB/year for post content\n\n**Step 2 — High-Level Design**\n- Write path: user posts → Post Service → publishes PostCreated event to message queue\n- Fanout service subscribes to PostCreated → for each follower, prepends post ID to their feed cache in Redis\n- Read path: Feed Service → reads from Redis feed cache (list of post IDs) → fetches post content from Post Cache\n- API: GET /v1/feed?userId=X&cursor=Y (cursor-based pagination)\n\n**Step 3 — Deep Dive: Fanout Strategy**\n- Fanout-on-write for regular users: pre-populate follower feeds in Redis on every post\n- Exception for celebrities (>10K followers): fanout-on-read — too expensive to write to millions of feed caches synchronously\n- Hybrid: celebrity posts fetched at read time and merged with pre-computed feed\n\n**Step 4 — Failure Handling**\n- Message queue provides durability for fanout — if fanout service crashes, it replays from queue\n- Redis feeds are a cache, not source of truth — Post DB is the durable store; stale feeds are acceptable (eventual consistency)\n- Rate limiting on POST /posts to prevent feed spam",
+      "expectations": [
+        "Recognizes this as a well-structured design following the 4-step framework and says so explicitly",
+        "Praises the back-of-envelope estimation: derives concrete QPS numbers (230 reads, 12 writes) and uses the read/write ratio to justify the design decisions",
+        "Praises the fanout-on-write vs fanout-on-read hybrid — this is exactly the celebrity problem discussed in Ch 11 of the book; the design correctly identifies and handles the hot-user case",
+        "Praises cursor-based pagination over offset-based — correct for infinite scroll feeds where new content is constantly inserted",
+        "Praises the explicit consistency model: choosing eventual consistency and documenting why (the 500ms SLA and user experience tolerance)",
+        "Praises the failure handling section: using the message queue as a durable buffer means fanout service failures don't lose posts",
+        "Does NOT manufacture fake issues just to have something to say",
+        "May offer optional improvements (cache warming on login, feed pre-generation for cold start, monitoring mentions) but clearly frames them as enhancements"
+      ]
+    }
+  ]
+}

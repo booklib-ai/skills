@@ -1,0 +1,43 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-java-style-null-handling",
+      "prompt": "Review this Kotlin code:\n\n```kotlin\nclass OrderService(private val repo: OrderRepository) {\n\n    fun getShippingCity(orderId: String): String {\n        val order = repo.findById(orderId)\n        if (order != null) {\n            val address = order.shippingAddress\n            if (address != null) {\n                val city = address.city\n                if (city != null) {\n                    return city.uppercase()\n                }\n            }\n        }\n        return \"UNKNOWN\"\n    }\n\n    fun applyDiscount(orderId: String, percent: Double): Double {\n        val order = repo.findById(orderId)\n        var total = 0.0\n        if (order != null) {\n            total = order.total\n            val membership = order.customer.membership\n            if (membership != null) {\n                if (membership.isActive != null && membership.isActive == true) {\n                    total = total * (1.0 - percent / 100.0)\n                }\n            }\n        }\n        return total\n    }\n}\n```",
+      "expectations": [
+        "Flags the deeply nested null-checking pyramid in `getShippingCity` as Java-style; recommends replacing with safe call chaining: `repo.findById(orderId)?.shippingAddress?.city?.uppercase() ?: \"UNKNOWN\"` (Ch 7: safe calls and Elvis operator)",
+        "Flags the nested null checks in `applyDiscount` as Java-style; recommends safe calls and let for null-safe transformations (Ch 7)",
+        "Flags `membership.isActive == true` as redundant when `isActive` is nullable Boolean; recommends `membership.isActive == true` can be replaced with `membership.isActive ?: false` or smart cast after null check (Ch 7)",
+        "Notes that `var total = 0.0` followed by conditional assignment is a code smell; recommends using an expression: `val total = order?.total ?: 0.0` (Ch 2: val over var, expression style)",
+        "Recommends using `let` for null-safe scoping: `membership?.takeIf { it.isActive == true }?.let { ... }` (Ch 7: let for null checks)",
+        "Provides a refactored version using safe calls, Elvis operator, and let throughout"
+      ]
+    },
+    {
+      "id": "eval-02-missing-extension-functions-named-args",
+      "prompt": "Review this Kotlin code:\n\n```kotlin\nfun formatUserDisplay(firstName: String, lastName: String, email: String, isAdmin: Boolean): String {\n    val name = firstName + \" \" + lastName\n    val badge = if (isAdmin == true) \"[ADMIN] \" else \"\"\n    return badge + name + \" <\" + email + \">\"\n}\n\nfun truncate(text: String, maxLen: Int, suffix: String): String {\n    return if (text.length > maxLen) {\n        text.substring(0, maxLen) + suffix\n    } else {\n        text\n    }\n}\n\nclass UserDisplayHelper {\n    fun render(firstName: String, lastName: String, email: String, isAdmin: Boolean): String {\n        return formatUserDisplay(firstName, lastName, email, isAdmin)\n    }\n\n    fun renderTruncated(firstName: String, lastName: String, email: String, isAdmin: Boolean, maxLen: Int): String {\n        val display = formatUserDisplay(firstName, lastName, email, isAdmin)\n        return truncate(display, maxLen, \"...\")\n    }\n}\n```",
+      "expectations": [
+        "Flags string concatenation with `+` throughout; recommends string templates (Ch 2: string templates are idiomatic Kotlin)",
+        "Flags `isAdmin == true` comparison on a non-nullable Boolean; should be just `isAdmin` (Ch 7: unnecessary null comparison on non-nullable type)",
+        "Notes that `truncate` and `formatUserDisplay` are standalone utility functions that would be more idiomatic as extension functions on `String` (Ch 3: prefer extension functions over utility classes)",
+        "Flags `UserDisplayHelper` as an unnecessary Java-style utility class wrapping top-level functions; recommends converting to top-level functions or extension functions (Ch 3: top-level functions replace static utility classes)",
+        "Identifies that `renderTruncated` has many same-typed parameters in a row which are ambiguous at call sites; recommends named arguments or introducing a value class or data class (Ch 3: use named/default arguments for clarity)",
+        "Notes that `truncate` could use a default parameter value for `suffix` instead of requiring callers to pass `\"...\"` every time (Ch 3: default parameter values)",
+        "Provides a refactored version using extension functions on String, string templates, and named/default args"
+      ]
+    },
+    {
+      "id": "eval-03-clean-kotlin-coroutines-sealed",
+      "prompt": "Review this Kotlin code:\n\n```kotlin\nsealed interface PaymentResult {\n    data class Success(val transactionId: String, val amount: Double) : PaymentResult\n    data class Declined(val reason: String, val code: Int) : PaymentResult\n    data class NetworkError(val cause: Throwable) : PaymentResult\n}\n\ninterface PaymentGateway {\n    suspend fun charge(amount: Double, token: String): PaymentResult\n}\n\nclass PaymentProcessor(\n    private val gateway: PaymentGateway,\n    private val scope: CoroutineScope\n) {\n    suspend fun processOrder(orderId: String, amount: Double, token: String): PaymentResult {\n        return withContext(Dispatchers.IO) {\n            try {\n                gateway.charge(amount, token)\n            } catch (e: CancellationException) {\n                throw e\n            } catch (e: Exception) {\n                PaymentResult.NetworkError(e)\n            }\n        }\n    }\n\n    fun processOrderAsync(orderId: String, amount: Double, token: String) =\n        scope.async { processOrder(orderId, amount, token) }\n}\n\nfun renderResult(result: PaymentResult): String = when (result) {\n    is PaymentResult.Success -> \"Charged \\$${result.amount} — txn ${result.transactionId}\"\n    is PaymentResult.Declined -> \"Declined (${result.code}): ${result.reason}\"\n    is PaymentResult.NetworkError -> \"Network error: ${result.cause.message}\"\n}\n```",
+      "expectations": [
+        "Recognizes this is already idiomatic, well-structured Kotlin and says so explicitly",
+        "Praises the sealed interface hierarchy for `PaymentResult` providing exhaustive when expressions without a catch-all branch (Ch 4: sealed classes for restricted hierarchies)",
+        "Praises re-throwing `CancellationException` to maintain cooperative coroutine cancellation (Ch 14: structured concurrency, cancellation handling)",
+        "Praises using `withContext(Dispatchers.IO)` for the blocking gateway call rather than blocking on a non-IO dispatcher (Ch 14: dispatcher usage)",
+        "Praises use of `data class` subtypes giving automatic `equals`, `hashCode`, `copy`, and `toString` (Ch 4: data classes for value types)",
+        "Praises the exhaustive `when` expression in `renderResult` that the compiler enforces due to the sealed hierarchy (Ch 4)",
+        "Does NOT manufacture issues to appear thorough; any suggestions are explicitly framed as minor optional improvements",
+        "May note minor optional suggestions such as whether `processOrderAsync` is needed given `processOrder` is already suspend, but frames them as design questions, not violations"
+      ]
+    }
+  ]
+}

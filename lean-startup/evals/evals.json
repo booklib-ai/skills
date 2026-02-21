@@ -1,0 +1,43 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-six-month-build-before-user-testing",
+      "prompt": "Review this product development plan:\n\n```\nProduct: TaskFlow — AI-powered project management for remote teams\nTeam: 4 engineers, 1 designer, 1 product manager\nTimeline: 6-month build before any user testing\n\nMonth 1-2: Core task management (create, assign, due dates, status)\nMonth 3: AI features (auto-prioritization, workload balancing)\nMonth 4: Integrations (Slack, GitHub, Jira, Google Calendar)\nMonth 5: Mobile apps (iOS and Android)\nMonth 6: Analytics dashboard and reporting\n\nSuccess criteria: Ship to beta users after 6 months\nMarketing plan: Product Hunt launch in month 7\n\nAssumptions we're making:\n- Remote teams struggle with task prioritization\n- AI suggestions will be trusted and acted on\n- Teams are willing to switch from their current PM tool\n- Integration with existing tools is a must-have on day one\n```",
+      "expectations": [
+        "Identifies the 6-month build before any user testing as a direct violation of the Build-Measure-Learn loop: validated learning cannot happen without users (Ch 3-4: validated learning, experimentation over planning)",
+        "Flags the listed assumptions ('remote teams struggle', 'AI suggestions will be trusted', 'willing to switch') as leap-of-faith assumptions that should be tested first, not assumed (Ch 5: identify and test leap-of-faith assumptions before building)",
+        "Flags the absence of any hypothesis or success metric beyond 'ship to beta': recommends defining a value hypothesis and growth hypothesis with measurable success criteria (Ch 5: value hypothesis and growth hypothesis)",
+        "Flags the absence of an MVP: 6 months of features is not an MVP — it is a v1.0 product launch; recommends identifying the single riskiest assumption and testing it with the minimum viable experiment (Ch 6: MVP is for learning, not launching)",
+        "Flags that integrations, mobile apps, and analytics are included before validating whether users even want the core task management and AI features; recommends cutting scope to the riskiest assumption (Ch 6: smallest experiment to test the riskiest assumption)",
+        "Flags the absence of innovation accounting: there are no cohort metrics, funnel metrics, or baseline measurements planned (Ch 7: innovation accounting)",
+        "Recommends concrete alternatives such as a concierge MVP (manually prioritize tasks for 5 teams for 2 weeks) or a Wizard of Oz test (fake AI powered by a human) to validate the AI trust assumption before building it"
+      ]
+    },
+    {
+      "id": "eval-02-feature-request-without-validated-learning",
+      "prompt": "Review this feature request and justification:\n\n```\nFeature Request: Advanced Filtering and Saved Views\n\nSubmitted by: Product Manager\nPriority: High\n\nRequest:\nAdd advanced filtering to the task list — filter by assignee, due date range,\ntag, project, and custom fields. Users should be able to save filter combinations\nas named views (e.g., \"My overdue tasks\", \"Sprint backlog\").\n\nJustification:\n- 3 customers mentioned filtering in support tickets last quarter\n- Our top competitor, Asana, has this feature\n- The engineering team estimates 3 sprints (6 weeks) to build\n- A customer on a discovery call said \"filtering would be great\"\n\nExpected outcome:\nImprove user retention and increase upsell conversion to Pro tier.\n\nApproval requested: Start sprint planning next week\n```",
+      "expectations": [
+        "Flags that 'customers mentioned in support tickets' and 'a customer said it would be great' are anecdotal, not validated learning — these are opinions, not measured behavior (Ch 3: validated learning requires empirical evidence, not opinions)",
+        "Flags competitor benchmarking ('Asana has this feature') as a reason to build without testing whether this feature drives retention or conversion for this specific user base (Ch 5: test your own value hypothesis, not competitors')",
+        "Flags that the expected outcome 'improve retention and increase upsell' is stated without a hypothesis, baseline metric, or success threshold; recommends defining a testable hypothesis before committing 6 weeks of engineering (Ch 7: innovation accounting — establish baseline, define success threshold)",
+        "Flags no mention of which leap-of-faith assumption is being tested: is the assumption that users can't find what they need, that they churn because of missing filters, or that Pro upsell is blocked by this feature? (Ch 5: identify the specific assumption)",
+        "Recommends a smaller experiment to validate before building: add a prominent 'Filter tasks' button that shows a 'Coming soon — join waitlist' modal and measure click rate to quantify demand (Ch 6: smallest experiment to validate the assumption)",
+        "Flags the absence of a pivot/persevere decision framework: what happens if the feature ships and retention does not improve? (Ch 8: define pivot/persevere criteria before building)"
+      ]
+    },
+    {
+      "id": "eval-03-well-structured-mvp-experiment",
+      "prompt": "Review this product experiment plan:\n\n```\nExperiment: Validate demand for AI-assisted code review summaries\n\nHypothesis:\nWe believe that engineering managers at companies with 10-50 engineers\nspend more than 2 hours per week reading through pull request diffs to\nstay informed. We believe they will pay for an automated daily digest\nthat summarizes what changed, why, and any risks flagged.\n\nRiskiest assumption: Managers will read and act on AI-generated summaries\nrather than skimming or ignoring them.\n\nMVP Design (Wizard of Oz — 3-week test):\n- Recruit 8 engineering managers via LinkedIn outreach\n- Each connects their GitHub repo (OAuth)\n- Every weekday morning, a human analyst (us) reads the day's PRs\n  and writes a 200-word summary email manually\n- We send it from a branded email: digest@codebrief.io\n- Participants do not know summaries are human-written\n\nSuccess metrics (measured after 3 weeks):\n- Primary: Open rate >= 70% across all 5 weekday sends\n- Secondary: At least 5 of 8 managers respond to exit survey saying\n  they found summaries 'useful' or 'very useful'\n- Conversion signal: At least 3 managers ask 'how do I keep this?'\n\nPivot/persevere criteria:\n- If primary AND secondary metrics are met: build v1 with real AI\n- If only one is met: run a second 2-week test with adjusted format\n- If neither is met: pivot to a different user segment or problem\n\nTimeline: Recruiting this week, experiment runs weeks 2-4, decision week 5\n```",
+      "expectations": [
+        "Recognizes this is a well-structured Lean Startup experiment and says so explicitly",
+        "Praises the falsifiable hypothesis that names a specific user segment, problem, and measurable behavior (Ch 3: validated learning with empirical evidence)",
+        "Praises identifying the riskiest assumption ('managers will act on summaries') separately from the general hypothesis — this is the correct application of leap-of-faith assumption identification (Ch 5: leap-of-faith assumptions)",
+        "Praises the Wizard of Oz MVP design that tests the value hypothesis without building any AI infrastructure (Ch 6: MVP is for learning, not launching — concierge/Wizard of Oz types)",
+        "Praises the quantified success metrics with specific thresholds (70% open rate, 5/8 satisfaction, 3 conversion signals) rather than vague goals (Ch 7: actionable metrics, not vanity metrics)",
+        "Praises the explicit pivot/persevere criteria defined before the experiment runs, making the decision data-driven rather than gut-driven (Ch 8: structured pivot/persevere decision)",
+        "Praises the tight 5-week timeline keeping the Build-Measure-Learn loop short (Ch 9: small batches, fast learning cycles)",
+        "Does NOT manufacture issues to appear thorough; any suggestions are explicitly framed as minor optional improvements"
+      ]
+    }
+  ]
+}

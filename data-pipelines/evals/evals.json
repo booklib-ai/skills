@@ -1,0 +1,45 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-etl-no-error-handling-no-idempotency",
+      "prompt": "Review this ETL script:\n\n```python\nimport psycopg2\nimport requests\n\nSOURCE_DB = 'postgresql://user:pass@source-host/prod'\nDEST_DB = 'postgresql://user:pass@warehouse-host/warehouse'\n\ndef run():\n    src = psycopg2.connect(SOURCE_DB)\n    dst = psycopg2.connect(DEST_DB)\n\n    rows = src.cursor().execute(\n        'SELECT id, customer_id, amount, created_at FROM orders'\n    ).fetchall()\n\n    for row in rows:\n        order_id, customer_id, amount, created_at = row\n        resp = requests.get(f'https://api.exchange.io/rate?currency=EUR')\n        rate = resp.json()['rate']\n        amount_eur = amount * rate\n\n        dst.cursor().execute(\n            'INSERT INTO orders_eur VALUES (%s, %s, %s, %s)',\n            (order_id, customer_id, amount_eur, created_at)\n        )\n\n    dst.commit()\n    src.close()\n    dst.close()\n\nif __name__ == '__main__':\n    run()\n```",
+      "expectations": [
+        "Flags the full-table extraction `SELECT * FROM orders` with no timestamp filter as a non-incremental load that will re-process the entire table on every run; recommends incremental extraction using a watermark (Ch 3-4: incremental over full extraction)",
+        "Flags the absence of idempotency: re-running the script will insert duplicate rows into `orders_eur`; recommends an INSERT ... ON CONFLICT DO NOTHING or MERGE pattern (Ch 13: idempotency is non-negotiable)",
+        "Flags the external API call `requests.get` inside the per-row loop, which issues one HTTP request per order row — an N+1 pattern causing severe performance and rate-limit issues; recommends fetching the exchange rate once before the loop",
+        "Flags no error handling anywhere: if the API call fails, the loop crashes mid-run leaving the destination in a partially loaded state with no indication of progress (Ch 13: error handling and retry strategies)",
+        "Flags hardcoded credentials in source strings; recommends environment variables or a secrets manager (Ch 13: never hardcode credentials)",
+        "Flags no logging of rows processed, errors encountered, or run duration (Ch 12: monitoring and observability)",
+        "Flags the absence of a staging table: data is written directly to the production `orders_eur` table without validation (Ch 8: always load to staging first)"
+      ]
+    },
+    {
+      "id": "eval-02-mixed-transform-and-load",
+      "prompt": "Review this data pipeline script:\n\n```python\nimport pandas as pd\nimport sqlalchemy\n\ndef process_and_load(csv_path: str, db_url: str, table: str):\n    df = pd.read_csv(csv_path)\n\n    # Clean and transform\n    df['email'] = df['email'].str.lower().str.strip()\n    df['revenue'] = df['revenue'].fillna(0)\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    df = df[df['revenue'] >= 0]\n    df['revenue_category'] = df['revenue'].apply(\n        lambda x: 'high' if x > 1000 else 'low'\n    )\n    df['country'] = df['country'].str.upper()\n\n    # Enrich with another file\n    regions = pd.read_csv('regions.csv')  # hardcoded path\n    df = df.merge(regions, on='country', how='left')\n\n    # Load directly into the final table\n    engine = sqlalchemy.create_engine(db_url)\n    df.to_sql(table, engine, if_exists='append', index=False)\n    print(f'Loaded {len(df)} rows')\n```",
+      "expectations": [
+        "Flags that transformation logic and loading logic are combined in a single function, violating separation of concerns; recommends splitting into separate extract, transform, and load functions (Ch 3: ETL pattern design, Ch 11: DAG-based task granularity)",
+        "Flags the hardcoded path `'regions.csv'` as a non-configurable dependency that breaks when the file moves; recommends externalizing all paths and inputs as parameters or config (Ch 13: configurable pipelines)",
+        "Flags `if_exists='append'` with no deduplication: re-running appends duplicate rows; recommends staging table + MERGE or using a unique constraint with INSERT OR IGNORE (Ch 13: idempotency)",
+        "Flags no data validation before loading: there is no check that the merge did not produce unexpected nulls in the region column or that row counts match expectations (Ch 10: validate at boundaries)",
+        "Flags no logging beyond a single print statement: recommends structured logging of row counts at each stage, null rates, and merge match rate (Ch 12: monitoring and observability)",
+        "Notes `df['revenue'].apply(lambda x: ...)` is a row-wise Python loop inside pandas which is slow; recommends `pd.cut` or `np.where` for vectorized categorization (Ch 9: transformation efficiency)",
+        "Recommends adding a schema validation step after reading the CSV to catch missing or mistyped columns before transformations run (Ch 10: schema validation at ingestion)"
+      ]
+    },
+    {
+      "id": "eval-03-clean-pipeline-with-retry-logging-separation",
+      "prompt": "Review this data pipeline implementation:\n\n```python\nimport logging\nimport time\nfrom datetime import datetime, timedelta\nfrom typing import Iterator\nimport psycopg2\nimport psycopg2.extras\n\nlogger = logging.getLogger(__name__)\n\nBATCH_SIZE = 1000\nMAX_RETRIES = 3\nBACKOFF_BASE = 2\n\n\ndef extract(conn, watermark: datetime) -> Iterator[list]:\n    \"\"\"Yield batches of new orders since the watermark.\"\"\"\n    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:\n        cur.execute(\n            'SELECT id, customer_id, amount, created_at '\n            'FROM orders WHERE created_at > %s ORDER BY created_at',\n            (watermark,)\n        )\n        while True:\n            rows = cur.fetchmany(BATCH_SIZE)\n            if not rows:\n                break\n            logger.info('Extracted batch of %d rows', len(rows))\n            yield [dict(r) for r in rows]\n\n\ndef transform(batch: list[dict]) -> list[dict]:\n    \"\"\"Apply business rules: normalize amounts, tag high-value orders.\"\"\"\n    result = []\n    for row in batch:\n        row['amount'] = round(float(row['amount']), 2)\n        row['is_high_value'] = row['amount'] > 500\n        result.append(row)\n    return result\n\n\ndef load(conn, rows: list[dict], run_id: str) -> int:\n    \"\"\"Upsert rows into orders_warehouse; return count of rows loaded.\"\"\"\n    with conn.cursor() as cur:\n        psycopg2.extras.execute_values(\n            cur,\n            '''\n            INSERT INTO orders_warehouse (id, customer_id, amount, is_high_value, created_at, pipeline_run_id)\n            VALUES %s\n            ON CONFLICT (id) DO UPDATE SET\n                amount = EXCLUDED.amount,\n                is_high_value = EXCLUDED.is_high_value,\n                pipeline_run_id = EXCLUDED.pipeline_run_id\n            ''',\n            [(r['id'], r['customer_id'], r['amount'], r['is_high_value'],\n              r['created_at'], run_id) for r in rows]\n        )\n    conn.commit()\n    return len(rows)\n\n\ndef run_with_retry(fn, *args, **kwargs):\n    \"\"\"Retry a function with exponential backoff on transient errors.\"\"\"\n    for attempt in range(1, MAX_RETRIES + 1):\n        try:\n            return fn(*args, **kwargs)\n        except psycopg2.OperationalError as e:\n            if attempt == MAX_RETRIES:\n                raise\n            delay = BACKOFF_BASE ** attempt\n            logger.warning('Attempt %d failed: %s. Retrying in %ds', attempt, e, delay)\n            time.sleep(delay)\n```",
+      "expectations": [
+        "Recognizes this is a well-designed pipeline and says so explicitly",
+        "Praises the clear separation of `extract`, `transform`, and `load` into distinct functions with single responsibilities (Ch 3: ETL pattern, Ch 11: task granularity)",
+        "Praises the watermark-based incremental extraction that avoids full-table scans on reruns (Ch 3-4: incremental extraction)",
+        "Praises the `ON CONFLICT DO UPDATE` upsert ensuring the pipeline is idempotent and safe to re-run (Ch 13: idempotency is non-negotiable)",
+        "Praises the generator-based `extract` function that yields batches, avoiding loading the full result set into memory (Ch 4: streaming extraction, memory efficiency)",
+        "Praises the `run_with_retry` wrapper with exponential backoff for transient database errors (Ch 13: error handling and retry strategies)",
+        "Praises structured logging at the batch level with row counts for observability (Ch 12: monitoring)",
+        "Praises the `pipeline_run_id` column in the load, enabling lineage tracking and debugging of which run produced which rows (Ch 13: data lineage)",
+        "Does NOT manufacture issues to appear thorough; any suggestions are framed as minor optional improvements"
+      ]
+    }
+  ]
+}

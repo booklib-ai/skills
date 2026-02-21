@@ -1,0 +1,45 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-mutable-var-nullable-overuse",
+      "prompt": "Review this Kotlin code:\n\n```kotlin\nclass UserSession {\n    var userId: String? = null\n    var userName: String? = null\n    var email: String? = null\n    var isLoggedIn: Boolean = false\n    var loginTime: Long? = null\n    var sessionToken: String? = null\n    var permissionLevel: Int = 0\n    \n    fun login(userId: String, userName: String, email: String, token: String, level: Int) {\n        this.userId = userId\n        this.userName = userName\n        this.email = email\n        this.isLoggedIn = true\n        this.loginTime = System.currentTimeMillis()\n        this.sessionToken = token\n        this.permissionLevel = level\n    }\n    \n    fun logout() {\n        this.userId = null\n        this.userName = null\n        this.email = null\n        this.isLoggedIn = false\n        this.loginTime = null\n        this.sessionToken = null\n        this.permissionLevel = 0\n    }\n    \n    fun getDisplayName(): String {\n        if (userName != null) {\n            return userName!!\n        }\n        return \"Guest\"\n    }\n    \n    fun isAdmin(): Boolean {\n        if (permissionLevel != null) {\n            return permissionLevel!! >= 10\n        }\n        return false\n    }\n}\n```",
+      "expectations": [
+        "Flags Item 1 (Limit mutability): all properties are var but most could be val if the design is reconsidered — the entire class should likely be replaced with two states (LoggedIn / LoggedOut) using a sealed class",
+        "Flags Item 8 (Avoid !! operator): getDisplayName() uses userName!! after a null check — should use userName ?: \"Guest\" with Elvis or smart cast",
+        "Notes that permissionLevel is Int (non-nullable) but isAdmin() checks 'if (permissionLevel != null)' — this check is always true and indicates confusion about nullability",
+        "Flags that nullable types (String?, Long?) are used for all properties even though they are only null in the logged-out state — this is a design smell, not a nullability need",
+        "Suggests modeling this with a sealed class: sealed class SessionState with data class LoggedIn(...) and object LoggedOut — making illegal states unrepresentable",
+        "References Item 2 (Minimize variable scope): all these properties have class-wide scope when they only have meaning in the logged-in state",
+        "Notes that the login() function taking 5 positional parameters (Item 17: named arguments) is error-prone — a data class or named arguments should be used"
+      ]
+    },
+    {
+      "id": "eval-02-missing-data-class-extension",
+      "prompt": "Review this Kotlin code:\n\n```kotlin\nclass Point {\n    var x: Double\n    var y: Double\n    \n    constructor(x: Double, y: Double) {\n        this.x = x\n        this.y = y\n    }\n    \n    fun distanceTo(other: Point): Double {\n        val dx = this.x - other.x\n        val dy = this.y - other.y\n        return Math.sqrt(dx * dx + dy * dy)\n    }\n    \n    override fun toString(): String {\n        return \"Point(\" + x + \", \" + y + \")\"\n    }\n}\n\nfun translatePoints(points: List<Point>, dx: Double, dy: Double): List<Point> {\n    val result = mutableListOf<Point>()\n    for (point in points) {\n        val newPoint = Point(point.x + dx, point.y + dy)\n        result.add(newPoint)\n    }\n    return result\n}\n\nfun findClosestTo(points: List<Point>, target: Point): Point? {\n    var closest: Point? = null\n    var minDist = Double.MAX_VALUE\n    for (point in points) {\n        val dist = point.distanceTo(target)\n        if (dist < minDist) {\n            minDist = dist\n            closest = point\n        }\n    }\n    return closest\n}\n```",
+      "expectations": [
+        "Flags that Point should be a data class — it has structural equality semantics but lacks the data modifier, meaning equals() and hashCode() use reference equality by default",
+        "Flags Item 1 (Limit mutability): Point fields are var but a geometric point is naturally immutable — they should be val",
+        "Notes that translatePoints uses an imperative for-loop with a mutable list where map { Point(it.x + dx, it.y + dy) } is idiomatic and more readable",
+        "Notes that findClosestTo uses an imperative loop where minByOrNull { it.distanceTo(target) } from the stdlib is idiomatic (Item 20: use stdlib algorithms)",
+        "Points out that Math.sqrt() is Java interop — Kotlin has kotlin.math.sqrt() which is more idiomatic",
+        "May suggest an extension function Point.translate(dx: Double, dy: Double) as a cleaner API that could also be placed in the data class with copy()",
+        "Notes that the string concatenation in toString() is replaced automatically by data class, but if kept manually, string templates are idiomatic: \"Point($x, $y)\""
+      ]
+    },
+    {
+      "id": "eval-03-idiomatic-kotlin-already-good",
+      "prompt": "Review this Kotlin code:\n\n```kotlin\nsealed interface PaymentResult {\n    data class Success(val transactionId: String, val amount: Money) : PaymentResult\n    data class Failure(val code: ErrorCode, val message: String) : PaymentResult\n    data object Pending : PaymentResult\n}\n\nenum class ErrorCode { INSUFFICIENT_FUNDS, CARD_DECLINED, NETWORK_ERROR, FRAUD_DETECTED }\n\n@JvmInline\nvalue class Money(val cents: Long) {\n    init {\n        require(cents >= 0) { \"Money cannot be negative: $cents cents\" }\n    }\n    \n    operator fun plus(other: Money) = Money(cents + other.cents)\n    operator fun minus(other: Money): Money {\n        require(other.cents <= cents) { \"Cannot subtract more than available\" }\n        return Money(cents - other.cents)\n    }\n    \n    override fun toString() = \"$${cents / 100}.${(cents % 100).toString().padStart(2, '0')}\"\n}\n\nfun interface PaymentGateway {\n    suspend fun charge(amount: Money, token: String): PaymentResult\n}\n\nsuspend fun processWithRetry(\n    gateway: PaymentGateway,\n    amount: Money,\n    token: String,\n    maxAttempts: Int = 3\n): PaymentResult {\n    repeat(maxAttempts) { attempt ->\n        val result = gateway.charge(amount, token)\n        when (result) {\n            is PaymentResult.Success -> return result\n            is PaymentResult.Failure -> {\n                if (result.code != ErrorCode.NETWORK_ERROR || attempt == maxAttempts - 1) return result\n            }\n            PaymentResult.Pending -> return result\n        }\n    }\n    return PaymentResult.Failure(ErrorCode.NETWORK_ERROR, \"Max retries exceeded\")\n}\n```",
+      "expectations": [
+        "Recognizes this is already idiomatic, well-designed Kotlin and says so explicitly",
+        "Praises the use of sealed interface for PaymentResult — exhaustive when expressions, extensible outside the module",
+        "Praises @JvmInline value class Money — Item 46/49 efficiency (no boxing overhead), type-safe, with require() precondition (Item 5)",
+        "Praises operator overloading on Money — follows convention (plus/minus) and is semantically meaningful (Item 12)",
+        "Praises fun interface PaymentGateway — SAM interface enabling lambda usage, clean abstraction",
+        "Praises using repeat with when instead of a for-loop with if/else — idiomatic control flow",
+        "Praises the sealed hierarchy discriminating between Pending and Failure so the retry logic doesn't retry non-network errors",
+        "Does NOT manufacture fake issues just to have something to say",
+        "May suggest minor optional improvements (e.g., a Currency field on Money for multi-currency support) but clearly frames them as out-of-scope for the given context"
+      ]
+    }
+  ]
+}

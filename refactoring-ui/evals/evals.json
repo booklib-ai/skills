@@ -1,0 +1,45 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-poor-visual-hierarchy",
+      "prompt": "Review this CSS for a product card component:\n\n```css\n.product-card {\n  padding: 20px;\n  border: 1px solid #cccccc;\n  border-radius: 4px;\n  background: white;\n}\n\n.product-card .category-label {\n  font-size: 16px;\n  font-weight: 400;\n  color: #333333;\n  margin-bottom: 8px;\n}\n\n.product-card .product-name {\n  font-size: 18px;\n  font-weight: 400;\n  color: #333333;\n  margin-bottom: 8px;\n}\n\n.product-card .product-price {\n  font-size: 16px;\n  font-weight: 400;\n  color: #333333;\n  margin-bottom: 8px;\n}\n\n.product-card .product-description {\n  font-size: 15px;\n  font-weight: 400;\n  color: #333333;\n  margin-bottom: 12px;\n}\n\n.product-card .stock-status {\n  font-size: 14px;\n  font-weight: 400;\n  color: #333333;\n}\n\n.product-card .add-to-cart-btn {\n  font-size: 16px;\n  font-weight: 400;\n  background: #333333;\n  color: white;\n  padding: 10px 20px;\n  border: none;\n  border-radius: 4px;\n  margin-top: 12px;\n}\n```",
+      "expectations": [
+        "Identifies the core problem: visual hierarchy is flat — nearly every element uses the same font-size (15-18px) and font-weight (400), making it impossible to identify what matters most at a glance",
+        "Flags that the product name should be the most visually prominent element — it should use a larger size (24-30px) and heavier weight (600-700) to create a clear entry point",
+        "Flags that the price is the second most important element — it should be visually distinct, not the same weight as the description",
+        "Points out that category-label should be de-emphasized (smaller, lighter color like hsl(0,0%,55%)) — it is supporting context, not primary information",
+        "Notes that relying on font-size alone for hierarchy is addressed in Chapter 2 of Refactoring UI: use weight and color as primary levers, size as secondary",
+        "Flags that all elements use the same color (#333333) — tertiary elements like category-label and stock-status should use a lighter grey to create visual separation",
+        "Notes the add-to-cart button has font-weight: 400 — a primary action button should use font-weight 500-600 for emphasis",
+        "Recommends a concrete hierarchy: product-name (24px, 700 weight, dark), price (20px, 600 weight, dark), description (15px, 400 weight, medium grey #6b7280), category-label (12px, 500 weight, uppercase, light grey)"
+      ]
+    },
+    {
+      "id": "eval-02-too-many-colors-no-spacing-system",
+      "prompt": "Review this CSS for a dashboard sidebar:\n\n```css\n.sidebar {\n  background: #1a237e;\n  padding: 15px;\n  width: 240px;\n}\n\n.sidebar-header {\n  color: #ffffff;\n  font-size: 22px;\n  margin-bottom: 7px;\n  padding-bottom: 11px;\n  border-bottom: 2px solid #3949ab;\n}\n\n.nav-item {\n  color: #b0bec5;\n  font-size: 14px;\n  padding: 9px 13px;\n  margin-bottom: 3px;\n  border-radius: 6px;\n}\n\n.nav-item.active {\n  background: #ff6f00;\n  color: #ffffff;\n}\n\n.nav-item:hover {\n  background: #283593;\n  color: #e8eaf6;\n}\n\n.nav-section-label {\n  color: #ffd54f;\n  font-size: 11px;\n  text-transform: uppercase;\n  margin-top: 18px;\n  margin-bottom: 6px;\n  letter-spacing: 1px;\n}\n\n.badge {\n  background: #e53935;\n  color: white;\n  font-size: 10px;\n  padding: 2px 7px;\n  border-radius: 10px;\n}\n\n.sidebar-footer {\n  margin-top: 23px;\n  padding-top: 14px;\n  border-top: 1px solid #303f9f;\n  color: #90a4ae;\n  font-size: 13px;\n}\n```",
+      "expectations": [
+        "Identifies the color proliferation problem: #1a237e, #3949ab, #ff6f00, #b0bec5, #283593, #e8eaf6, #ffd54f, #e53935, #303f9f, #90a4ae — 10+ ad-hoc hex colors with no systematic relationship",
+        "Flags that the active state uses #ff6f00 (deep orange) which is unrelated to the #1a237e (indigo) background — the accent color should be a lighter tint of the primary palette or a purposeful brand color",
+        "Flags that nav-section-label uses #ffd54f (amber/yellow) as a color — this creates a third unrelated hue in the sidebar; section labels should use a desaturated light color consistent with the palette",
+        "Flags the arbitrary spacing values: 7px, 11px, 9px, 13px, 3px, 18px, 6px, 23px, 14px — none of these follow a spacing scale; Refactoring UI Ch 3 prescribes a constrained scale (4, 8, 12, 16, 24, 32px)",
+        "Notes that grey-on-deep-blue text (#b0bec5 on #1a237e) needs a contrast check — and recommends using a color that is hue-matched to the background rather than a neutral grey",
+        "Recommends defining a design token set: 2-3 shades of indigo for the sidebar tones, one accent color for the active state, one semantic red for the badge — not 10 unrelated hex values",
+        "Notes that the badge using an unrelated red (#e53935) is fine for semantic meaning but should be defined as a token (--color-danger) rather than a hard-coded hex"
+      ]
+    },
+    {
+      "id": "eval-03-clean-hierarchy-design",
+      "prompt": "Review this CSS for a pricing card component:\n\n```css\n:root {\n  --space-1: 4px;\n  --space-2: 8px;\n  --space-3: 12px;\n  --space-4: 16px;\n  --space-6: 24px;\n  --space-8: 32px;\n  --space-12: 48px;\n\n  --text-sm: 13px;\n  --text-base: 16px;\n  --text-lg: 18px;\n  --text-xl: 20px;\n  --text-3xl: 30px;\n\n  --color-text-primary: hsl(222, 47%, 11%);\n  --color-text-secondary: hsl(215, 20%, 40%);\n  --color-text-tertiary: hsl(215, 16%, 60%);\n  --color-accent: hsl(245, 75%, 60%);\n  --color-accent-light: hsl(245, 75%, 96%);\n}\n\n.pricing-card {\n  background: white;\n  border-radius: 12px;\n  padding: var(--space-8);\n  box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);\n  max-width: 320px;\n}\n\n.plan-name {\n  font-size: var(--text-sm);\n  font-weight: 600;\n  color: var(--color-accent);\n  text-transform: uppercase;\n  letter-spacing: 0.08em;\n  margin-bottom: var(--space-3);\n}\n\n.plan-price {\n  font-size: var(--text-3xl);\n  font-weight: 700;\n  color: var(--color-text-primary);\n  margin-bottom: var(--space-1);\n}\n\n.price-period {\n  font-size: var(--text-sm);\n  color: var(--color-text-tertiary);\n  margin-bottom: var(--space-6);\n}\n\n.feature-list {\n  list-style: none;\n  padding: 0;\n  margin: 0 0 var(--space-8) 0;\n}\n\n.feature-item {\n  font-size: var(--text-base);\n  color: var(--color-text-secondary);\n  padding: var(--space-2) 0;\n  display: flex;\n  align-items: center;\n  gap: var(--space-3);\n}\n\n.cta-button {\n  display: block;\n  width: 100%;\n  padding: var(--space-3) var(--space-6);\n  background: var(--color-accent);\n  color: white;\n  font-size: var(--text-base);\n  font-weight: 600;\n  border: none;\n  border-radius: 8px;\n  cursor: pointer;\n  text-align: center;\n}\n```",
+      "expectations": [
+        "Recognizes this as a well-designed component with proper design system foundations and says so explicitly",
+        "Praises the CSS custom property (design token) system: spacing scale (--space-1 through --space-12 in steps of 4px), type scale (--text-sm through --text-3xl), and color tokens all follow Refactoring UI principles",
+        "Praises the three-level color hierarchy for text: --color-text-primary (dark), --color-text-secondary (medium), --color-text-tertiary (light) — directly implementing the Refactoring UI color-as-hierarchy approach",
+        "Praises the visual hierarchy of the price card: plan name is small+uppercase+accent (supporting), price is 30px+700 weight (primary), period is small+tertiary (de-emphasized) — excellent three-tier hierarchy",
+        "Praises the shadow: uses a two-layer shadow (diffuse + tight) following the Refactoring UI recommendation for realistic depth",
+        "Praises that plan-name uses color (--color-accent) to create emphasis at a small size rather than making it large — using color+weight as levers, not font-size alone",
+        "Does NOT manufacture fake issues just to have something to say",
+        "May offer optional improvements (hover state for cta-button, dark mode token variants, focus ring for accessibility) but clearly frames them as enhancements"
+      ]
+    }
+  ]
+}

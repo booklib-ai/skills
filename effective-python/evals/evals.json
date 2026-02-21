@@ -1,0 +1,44 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-loop-except-mutable-default",
+      "prompt": "Review this Python code:\n\n```python\ndef process_orders(orders, results=[]):\n    for i in range(len(orders)):\n        order = orders[i]\n        try:\n            total = order['price'] * order['quantity']\n            results.append({'id': order['id'], 'total': total})\n        except:\n            pass\n\n    processed = []\n    for item in results:\n        processed.append(item['total'])\n    return processed\n\n\ndef get_high_value(orders, threshold):\n    high = []\n    for order in orders:\n        if order['total'] > threshold:\n            high.append(order)\n    return high\n```",
+      "expectations": [
+        "Flags the mutable default argument `results=[]` as a critical bug (Item 24: Use None and docstrings for dynamic default arguments)",
+        "Flags bare `except:` that silently swallows all exceptions including KeyboardInterrupt and SystemExit (Item 65: always catch specific exception types)",
+        "Identifies `for i in range(len(orders))` as non-idiomatic; recommends `for order in orders` with enumerate if index is needed (Item 7)",
+        "Identifies the manual list-building loop in `process_orders` that should be a list comprehension (Item 27)",
+        "Identifies the manual list-building loop in `get_high_value` that should be a list comprehension (Item 27)",
+        "Provides a corrected version that uses `None` as default and initializes inside the function",
+        "Provides corrected versions using list comprehensions for both loops"
+      ]
+    },
+    {
+      "id": "eval-02-class-missing-dataclass",
+      "prompt": "Review this Python code:\n\n```python\nclass Product:\n    def __init__(self, name, price, category, in_stock=True):\n        self.name = name\n        self.price = price\n        self.category = category\n        self.in_stock = in_stock\n\n    def get_name(self):\n        return self.name\n\n    def set_price(self, price):\n        if price < 0:\n            raise ValueError('Price cannot be negative')\n        self.price = price\n\n    def is_available(self):\n        return self.in_stock == True\n\n\nclass ProductCatalog:\n    def __init__(self):\n        self.__items = []\n\n    def add(self, product):\n        self.__items.append(product)\n\n    def find_by_category(self, category):\n        result = []\n        for p in self.__items:\n            if p.category == category:\n                result.append(p)\n        return result\n```",
+      "expectations": [
+        "Identifies that `Product` is a plain data holder and recommends converting it to a `@dataclass` (Item 37: compose classes instead of nested builtin types; dataclasses are idiomatic for value objects)",
+        "Flags `get_name()` as a Java-style getter; Pythonic code uses direct attribute access (Item 44: use plain attributes over getter/setter methods)",
+        "Flags `set_price()` as a Java-style setter; recommends replacing with `@property` with a setter that includes the validation (Item 44)",
+        "Flags `self.in_stock == True` comparison; should be `return self.in_stock` (PEP 8 / Item 1)",
+        "Flags `self.__items` name mangling via double underscore; recommends single underscore `_items` for internal use (Item 42: prefer public attributes)",
+        "Notes absence of `__repr__` on `Product` making debugging harder; a dataclass provides this automatically",
+        "Identifies the manual list-building loop in `find_by_category` as a candidate for a list comprehension (Item 27)",
+        "Provides a corrected version using `@dataclass` with `@property` for price validation"
+      ]
+    },
+    {
+      "id": "eval-03-idiomatic-python-already-good",
+      "prompt": "Review this Python code:\n\n```python\nfrom contextlib import contextmanager\nfrom typing import Generator, Iterator\nimport logging\n\nlogger = logging.getLogger(__name__)\n\n\n@contextmanager\ndef managed_connection(host: str, port: int) -> Generator:\n    \"\"\"Open a connection and ensure it is closed on exit.\"\"\"\n    conn = _connect(host, port)\n    try:\n        logger.debug('Opened connection to %s:%d', host, port)\n        yield conn\n    finally:\n        conn.close()\n        logger.debug('Closed connection to %s:%d', host, port)\n\n\ndef read_records(filepath: str) -> Iterator[dict]:\n    \"\"\"Yield records from a newline-delimited JSON file one at a time.\"\"\"\n    with open(filepath, encoding='utf-8') as fh:\n        for line in fh:\n            line = line.strip()\n            if line:\n                yield _parse(line)\n\n\ndef process_batch(records: Iterator[dict], batch_size: int = 500) -> Iterator[list]:\n    \"\"\"Yield successive fixed-size batches from an iterator.\"\"\"\n    batch: list[dict] = []\n    for record in records:\n        batch.append(record)\n        if len(batch) >= batch_size:\n            yield batch\n            batch = []\n    if batch:\n        yield batch\n```",
+      "expectations": [
+        "Recognizes this is already idiomatic, well-structured Python and says so explicitly",
+        "Praises the use of `@contextmanager` for resource management (Item 66: use contextlib for reusable try/finally patterns)",
+        "Praises the generator function `read_records` for memory-efficient file reading (Item 30: consider generators instead of returning lists)",
+        "Praises the generator function `process_batch` for lazy batch production without loading the entire sequence into memory (Item 30)",
+        "Praises type annotations and docstrings on all public functions (Items 84, 90)",
+        "Does NOT manufacture issues to appear thorough; any suggestions are explicitly framed as minor optional improvements",
+        "May note minor optional suggestions such as using `itertools.islice` for batching, but frames them as stylistic alternatives, not violations"
+      ]
+    }
+  ]
+}

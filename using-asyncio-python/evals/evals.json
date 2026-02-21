@@ -1,0 +1,43 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-blocking-io-inside-async",
+      "prompt": "Review this async Python code:\n\n```python\nimport asyncio\nimport requests\nimport time\n\nPRICING_API = 'https://api.pricing.internal/products'\nINVENTORY_API = 'https://api.inventory.internal/stock'\n\nasync def fetch_product_data(product_ids: list[str]) -> list[dict]:\n    results = []\n    for pid in product_ids:\n        price_resp = requests.get(f'{PRICING_API}/{pid}')\n        price = price_resp.json()['price']\n\n        stock_resp = requests.get(f'{INVENTORY_API}/{pid}')\n        stock = stock_resp.json()['quantity']\n\n        results.append({'id': pid, 'price': price, 'stock': stock})\n        time.sleep(0.1)  # be polite to the API\n\n    return results\n\nasync def main():\n    ids = ['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8']\n    data = await fetch_product_data(ids)\n    print(f'Fetched {len(data)} products')\n\nasyncio.run(main())\n```",
+      "expectations": [
+        "Flags `requests.get()` inside an `async def` function as a critical blocking call that stalls the entire event loop while waiting for the HTTP response (Ch 2-3: never block the event loop)",
+        "Flags `time.sleep(0.1)` inside an async function as a blocking sleep that also freezes the event loop; recommends `await asyncio.sleep(0.1)` (Ch 3: use asyncio.sleep, not time.sleep)",
+        "Flags that the two API calls per product (`PRICING_API` and `INVENTORY_API`) are made sequentially inside the loop; recommends using `asyncio.gather` to fetch both concurrently per product (Ch 3: use gather for fan-out concurrency)",
+        "Flags that all products are fetched sequentially in a for loop; recommends fetching all products concurrently with `asyncio.gather` or `create_task` (Ch 3: create_task for concurrency)",
+        "Recommends replacing `requests` with `aiohttp.ClientSession` for non-blocking HTTP calls (Ch 4: use aiohttp over requests in async code)",
+        "Recommends using a `Semaphore` to limit concurrent requests instead of `time.sleep` for rate limiting (Ch 3: Semaphore for concurrency control)",
+        "Provides a corrected version using aiohttp, asyncio.gather, asyncio.sleep, and a Semaphore"
+      ]
+    },
+    {
+      "id": "eval-02-ensure-future-and-fire-and-forget",
+      "prompt": "Review this async Python code:\n\n```python\nimport asyncio\n\nasync def save_to_database(record: dict) -> None:\n    await asyncio.sleep(0.05)  # simulate DB write\n    print(f\"Saved {record['id']}\")\n\nasync def send_notification(user_id: str) -> None:\n    await asyncio.sleep(0.1)  # simulate email send\n    print(f\"Notified {user_id}\")\n\nasync def process_event(event: dict) -> None:\n    await save_to_database(event)\n\n    # Fire and forget the notification\n    asyncio.ensure_future(send_notification(event['user_id']))\n\n    print(f\"Processed event {event['id']}\")\n\nasync def main():\n    loop = asyncio.get_event_loop()\n\n    events = [{'id': f'e{i}', 'user_id': f'u{i}'} for i in range(10)]\n    for event in events:\n        loop.run_until_complete(process_event(event))\n\nasyncio.run(main())\n```",
+      "expectations": [
+        "Flags `asyncio.ensure_future()` as the deprecated/less preferred API for scheduling coroutines; recommends `asyncio.create_task()` which is more explicit and requires an active event loop (Ch 3: prefer create_task over ensure_future)",
+        "Flags fire-and-forget usage of `ensure_future` without storing the task reference: if `send_notification` raises an exception, it is silently discarded; recommends keeping a reference and handling exceptions (Ch 3: keep references to created tasks; unhandled task exceptions are silent)",
+        "Flags `loop.run_until_complete(process_event(event))` called inside an already-running async context (`main` is a coroutine): `run_until_complete` cannot be called from within a running loop; this will raise RuntimeError (Ch 3: do not call asyncio.run or run_until_complete from within async code)",
+        "Flags `asyncio.get_event_loop()` as deprecated for getting the running loop inside async code; recommends `asyncio.get_running_loop()` or eliminating direct loop access (Ch 3: use asyncio.run as the single entry point, avoid manual loop management)",
+        "Flags the sequential `for event in events` loop using run_until_complete; recommends processing all events concurrently with `asyncio.gather` (Ch 3: use gather for concurrency)",
+        "Provides a corrected version using create_task with proper task tracking, asyncio.gather for concurrency, and exception handling on fire-and-forget tasks"
+      ]
+    },
+    {
+      "id": "eval-03-clean-async-gather-task-management",
+      "prompt": "Review this async Python code:\n\n```python\nimport asyncio\nimport logging\nfrom contextlib import asynccontextmanager\nfrom typing import AsyncIterator\nimport aiohttp\n\nlogger = logging.getLogger(__name__)\n\nMAX_CONCURRENT = 5\n\n@asynccontextmanager\nasync def http_session() -> AsyncIterator[aiohttp.ClientSession]:\n    async with aiohttp.ClientSession(\n        timeout=aiohttp.ClientTimeout(total=10)\n    ) as session:\n        yield session\n\n\nasync def fetch_one(session: aiohttp.ClientSession, url: str, semaphore: asyncio.Semaphore) -> dict:\n    async with semaphore:\n        try:\n            async with session.get(url) as resp:\n                resp.raise_for_status()\n                return {'url': url, 'data': await resp.json()}\n        except aiohttp.ClientError as exc:\n            logger.warning('Failed to fetch %s: %s', url, exc)\n            return {'url': url, 'data': None, 'error': str(exc)}\n\n\nasync def fetch_all(urls: list[str]) -> list[dict]:\n    semaphore = asyncio.Semaphore(MAX_CONCURRENT)\n    async with http_session() as session:\n        tasks = [\n            asyncio.create_task(fetch_one(session, url, semaphore))\n            for url in urls\n        ]\n        results = await asyncio.gather(*tasks, return_exceptions=True)\n    return [r for r in results if not isinstance(r, BaseException)]\n\n\nasync def main() -> None:\n    urls = [f'https://api.example.com/item/{i}' for i in range(20)]\n    items = await fetch_all(urls)\n    logger.info('Fetched %d items successfully', len(items))\n\n\nif __name__ == '__main__':\n    asyncio.run(main())\n```",
+      "expectations": [
+        "Recognizes this is well-structured async code and says so explicitly",
+        "Praises the async context manager `http_session` using `async with aiohttp.ClientSession` ensuring the session is always closed (Ch 3-4: use async context managers for resource cleanup)",
+        "Praises `asyncio.Semaphore(MAX_CONCURRENT)` to cap concurrent requests, preventing thundering-herd against the remote API (Ch 3: use Semaphore to limit concurrency)",
+        "Praises `asyncio.create_task()` over `ensure_future()` for scheduling coroutines (Ch 3: prefer create_task)",
+        "Praises `asyncio.gather(*tasks, return_exceptions=True)` which prevents one failure from cancelling all other in-flight requests (Ch 3: use return_exceptions=True in gather)",
+        "Praises `resp.raise_for_status()` and catching `aiohttp.ClientError` with graceful per-URL error handling that does not crash the whole batch (Ch 3: error handling per task)",
+        "Praises `asyncio.run(main())` as the single clean entry point (Ch 3: use asyncio.run, avoid manual loop management)",
+        "Does NOT manufacture issues to appear thorough; any suggestions are explicitly framed as minor optional improvements"
+      ]
+    }
+  ]
+}

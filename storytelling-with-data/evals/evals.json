@@ -1,0 +1,47 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-pie-chart-comparison",
+      "prompt": "Review this data visualization specification:\n\nChart type: Pie chart (donut variant)\nTitle: \"Website Traffic by Source\"\nData (8 slices):\n- Organic Search: 28%\n- Direct: 22%\n- Social Media: 18%\n- Email: 12%\n- Paid Search: 9%\n- Referral: 5%\n- Display Ads: 4%\n- Other: 2%\n\nDesign choices:\n- Each slice has a distinct color (8 different hues)\n- Legend positioned to the right listing all 8 sources with their percentages\n- No data labels on the slices themselves\n- Title is \"Website Traffic by Source\" (descriptive, not action-oriented)\n- The chart will be used in a monthly marketing review presentation to decide where to increase ad spend",
+      "expectations": [
+        "Identifies pie/donut charts as inappropriate for comparing 8 categories — human perception cannot accurately compare angles or arc lengths, especially for similar-sized slices like 9%, 5%, 4%, 2%",
+        "Recommends replacing the pie chart with a horizontal bar chart ordered by value — this makes comparison trivially easy and is the explicit recommendation from Storytelling with Data Ch 2",
+        "Flags that 8 different colors violates the principle of purposeful color use — color should highlight the data point that matters, not differentiate all 8 categories",
+        "Flags the generic, descriptive title 'Website Traffic by Source' — per Ch 7, the title should state the actionable takeaway (e.g., 'Organic and Direct together drive half of all traffic — paid channels underperform')",
+        "Notes that forcing the audience to cross-reference a legend for 8 items adds unnecessary cognitive load — direct labels on bars would be clearer",
+        "Points out the context: this is for a decision about ad spend — the chart should make it obvious which channels to invest in or cut, not just show proportions",
+        "May suggest greying out all bars except the ones relevant to the decision (e.g., Paid Search and Display Ads highlighted to show underperformance) to focus attention per Ch 4"
+      ]
+    },
+    {
+      "id": "eval-02-chart-junk",
+      "prompt": "Review this data visualization specification for a quarterly sales dashboard:\n\nChart type: 3D clustered column chart\nTitle: \"Q1-Q4 Sales Performance by Region\" (displayed in WordArt-style gradient text)\nData: 4 regions × 4 quarters = 16 bars\nDesign choices:\n- 3D perspective effect with visible depth on bars\n- Heavy gridlines every $50K (dark grey, 1.5px)\n- Chart border: black box outline around entire chart area\n- Background: light blue gradient fill in the plot area\n- Data markers: small diamond shapes at the top of each bar\n- Both X-axis and Y-axis tick marks visible\n- Legend box with border in lower-right corner overlapping some bars\n- Y-axis title 'Sales ($)' rotated 90 degrees\n- All 16 bars use different colors\n- Dollar signs and commas on every data label (\"$125,432.00\")\n- Drop shadow effect on the chart frame",
+      "expectations": [
+        "Identifies the 3D effect as a critical flaw: 3D distorts the visual representation of bar heights — the same bar appears different heights depending on viewing angle, making accurate comparison impossible (Ch 2 and Ch 3)",
+        "Flags the 16-color palette as violating purposeful color use — with 4 regions × 4 quarters, either region or time should use color; the other should use position/grouping alone",
+        "Flags the heavy gridlines as chart junk (Ch 3): dark 1.5px gridlines compete with the data; if gridlines are needed, they should be very light grey (~#e5e7eb) and thin (0.5px)",
+        "Flags the blue gradient background as chart junk — plot area backgrounds add noise without adding information; white or no background is correct",
+        "Flags the chart border/drop shadow as chart junk — borders around charts imply the chart needs to be 'contained' and add visual noise",
+        "Flags the rotated Y-axis title — rotated text is harder to read; the axis title could often be removed if axis labels make the unit clear, or moved to be horizontal",
+        "Notes the data labels show '$125,432.00' — excessive precision; for a quarterly business review, '$125K' communicates the same information with far less clutter",
+        "Notes the overlapping legend is a usability problem — direct labeling of regions on the chart would eliminate the need for a legend entirely",
+        "Recommends: remove 3D, use flat 2D bars; remove gridlines or make them very light; white background; consistent color scheme (one color per region); direct labels; action-oriented title"
+      ]
+    },
+    {
+      "id": "eval-03-clean-effective-visualization",
+      "prompt": "Review this data visualization specification:\n\nContext: Presenting to the VP of Sales — goal is to get approval to hire 2 more sales reps in the APAC region\n\nChart type: Horizontal bar chart\nTitle: \"APAC revenue per rep is half the company average — we need more headcount\"\n\nData: Revenue per sales rep by region (last 12 months)\n- North America: $2.4M per rep (4 reps)\n- Europe: $2.1M per rep (3 reps)\n- APAC: $1.2M per rep (2 reps)  ← highlighted in brand blue\n- Latin America: $1.9M per rep (2 reps)\n\nDesign choices:\n- All bars grey (#9ca3af) except APAC which is brand blue (#2563eb)\n- Direct value labels at the end of each bar (\"$2.4M\", \"$2.1M\", etc.)\n- A vertical dashed reference line at $2.0M labeled 'Company average'\n- No legend (regions labeled directly on Y-axis)\n- Light horizontal gridlines removed; bars speak for themselves\n- Clean white background\n- Annotation next to APAC bar: \"Only 2 reps covering 4.5B population\"\n- Footnote: Source: Salesforce CRM, FY2025",
+      "expectations": [
+        "Recognizes this as a well-crafted, purposeful data visualization and says so explicitly",
+        "Praises the action-oriented title: 'APAC revenue per rep is half the company average — we need more headcount' states the insight AND the implication — exactly the Big Idea principle from Ch 1 and horizontal logic from Ch 7",
+        "Praises the strategic color use: all bars grey except APAC in brand blue — the audience's eye is immediately drawn to the data point that matters, implementing the Ch 4 principle of using color to direct attention",
+        "Praises the reference line: the company average line gives context to judge APAC's performance without requiring mental arithmetic",
+        "Praises direct labeling: no legend needed because regions are labeled on the Y-axis and values are labeled directly on bars — eliminating the cognitive cost of legend cross-referencing (Ch 3)",
+        "Praises the annotation: 'Only 2 reps covering 4.5B population' is a storytelling technique that adds human context to the data (Ch 7 — tell the story, don't just show the numbers)",
+        "Praises the source footnote: establishing credibility and data provenance is a design best practice",
+        "Does NOT manufacture fake issues just to have something to say",
+        "May offer optional suggestions (a second chart showing projected revenue with 4 APAC reps to make the business case) but clearly frames them as additions to strengthen the narrative, not corrections"
+      ]
+    }
+  ]
+}

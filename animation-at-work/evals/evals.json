@@ -1,0 +1,44 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-no-easing-layout-properties-inconsistent-duration",
+      "prompt": "Review these CSS animations:\n\n```css\n/* Modal open animation */\n.modal {\n  display: none;\n  width: 600px;\n  padding: 40px;\n  background: white;\n  border-radius: 8px;\n  position: fixed;\n  top: 50%;\n  left: 50%;\n  margin-top: -200px;\n  margin-left: -300px;\n}\n\n.modal.visible {\n  display: block;\n  animation: modal-open 0.4s linear;\n}\n\n@keyframes modal-open {\n  from {\n    margin-top: -400px;\n    opacity: 0;\n    width: 400px;\n  }\n  to {\n    margin-top: -200px;\n    opacity: 1;\n    width: 600px;\n  }\n}\n\n/* Button hover */\n.btn:hover {\n  background-color: #0056b3;\n  padding: 14px 28px;\n  border-radius: 12px;\n  transition: all 2s linear;\n}\n\n/* Notification badge */\n.badge-new {\n  animation: pulse 0.8s linear infinite;\n}\n\n@keyframes pulse {\n  0%   { transform: scale(1); }\n  50%  { transform: scale(1.2); }\n  100% { transform: scale(1); }\n}\n```",
+      "expectations": [
+        "Flags `linear` easing on the modal open animation: linear motion feels robotic for UI elements entering the screen; recommends `ease-out` for elements entering (ease-out: fast start, gentle stop conveys natural deceleration)",
+        "Flags animating `margin-top` and `width` in the modal keyframes: these are layout properties that trigger full reflow on every frame; recommends replacing with `transform: translateY()` and `transform: scale()` or opacity (Ch 3 / Performance: only animate composite properties — transform and opacity)",
+        "Flags `transition: all 2s linear` on the button hover: 2 seconds is far too slow for a hover feedback interaction; functional UI feedback should be 100-200ms; recommends `transition: background-color 150ms ease-out` (Ch 1: duration guidance — micro-interactions 100-200ms)",
+        "Flags `transition: all` as an anti-pattern: it animates every changing property including layout properties like padding and border-radius that trigger reflow; recommends specifying only the intended properties",
+        "Flags animating `padding` and `border-radius` on the button hover for the same layout-thrashing reason",
+        "Flags the `linear` easing on the pulse badge animation: while linear is acceptable for continuous looping motion, there is no `prefers-reduced-motion` media query to disable or reduce this infinite animation for users with vestibular disorders",
+        "Notes the modal uses `display: none` switching to `display: block` which cannot be animated directly; the animation will jump; recommends using opacity/transform with visibility or pointer-events instead"
+      ]
+    },
+    {
+      "id": "eval-02-hover-animation-too-slow",
+      "prompt": "Review these CSS hover and focus animations:\n\n```css\n/* Navigation link hover */\n.nav-link {\n  color: #333;\n  text-decoration: none;\n  border-bottom: 2px solid transparent;\n  transition: border-bottom-color 1.5s ease-in-out,\n              color 1.5s ease-in-out;\n}\n\n.nav-link:hover,\n.nav-link:focus {\n  color: #0066cc;\n  border-bottom-color: #0066cc;\n}\n\n/* Card hover lift effect */\n.card {\n  box-shadow: 0 1px 3px rgba(0,0,0,0.12);\n  transition: box-shadow 1.2s ease,\n              top 1.2s ease;\n  position: relative;\n  top: 0;\n}\n\n.card:hover {\n  box-shadow: 0 8px 25px rgba(0,0,0,0.15);\n  top: -4px;\n}\n\n/* Icon button feedback */\n.icon-btn:active {\n  transform: scale(0.9);\n  transition: transform 800ms ease;\n}\n```",
+      "expectations": [
+        "Flags the 1.5s transition on `.nav-link` hover as far too slow for a hover feedback: users expect near-instant response (100-200ms) for hover states; a 1.5s delay makes the interface feel broken or laggy (Ch 1: duration guidance — micro-interactions 100-200ms; functional animations under 1s)",
+        "Flags the 1.2s transition on `.card` hover for the same reason: hover lift effects should be 150-250ms to feel responsive",
+        "Flags animating `top` on the card hover: `top` is a layout property that triggers reflow; recommends replacing with `transform: translateY(-4px)` which is GPU-accelerated (performance: animate composite properties only)",
+        "Flags animating `box-shadow` on the card: box-shadow triggers paint on every frame; recommends using a pseudo-element with opacity transition as a performance optimization, or accepting the paint cost with awareness",
+        "Flags the 800ms active/press feedback on `.icon-btn`: press feedback should be the fastest animation in the UI (100-150ms); 800ms means the animation outlasts the press itself and confuses the user",
+        "Flags `ease-in-out` on all hover effects: `ease-in-out` is appropriate for elements that move and stay on screen, but for hover state changes `ease-out` is more natural (fast onset, settles gently)",
+        "Notes the absence of a `prefers-reduced-motion` media query anywhere in the stylesheet"
+      ]
+    },
+    {
+      "id": "eval-03-clean-animation-transform-opacity-consistent-easing",
+      "prompt": "Review these CSS and JavaScript animations:\n\n```css\n/* Dropdown menu enter/exit */\n.dropdown {\n  opacity: 0;\n  transform: translateY(-8px);\n  pointer-events: none;\n  transition: opacity 200ms ease-out,\n              transform 200ms ease-out;\n}\n\n.dropdown.open {\n  opacity: 1;\n  transform: translateY(0);\n  pointer-events: auto;\n}\n\n/* Toast notification slide-in */\n.toast {\n  transform: translateX(110%);\n  transition: transform 300ms ease-out;\n}\n\n.toast.show {\n  transform: translateX(0);\n}\n\n.toast.hide {\n  transform: translateX(110%);\n  transition: transform 200ms ease-in;\n}\n\n/* Button press feedback */\n.btn:active {\n  transform: scale(0.96);\n  transition: transform 100ms ease-in;\n}\n\n/* Reduced motion support */\n@media (prefers-reduced-motion: reduce) {\n  *,\n  *::before,\n  *::after {\n    animation-duration: 0.01ms !important;\n    animation-iteration-count: 1 !important;\n    transition-duration: 0.01ms !important;\n  }\n}\n```\n\n```js\n// Page section fade-in on scroll (Web Animations API)\ndocument.querySelectorAll('.section').forEach(section => {\n  const observer = new IntersectionObserver(entries => {\n    entries.forEach(entry => {\n      if (entry.isIntersecting) {\n        entry.target.animate(\n          [{ opacity: 0, transform: 'translateY(20px)' },\n           { opacity: 1, transform: 'translateY(0)' }],\n          { duration: 400, easing: 'ease-out', fill: 'forwards' }\n        );\n        observer.unobserve(entry.target);\n      }\n    });\n  }, { threshold: 0.15 });\n  observer.observe(section);\n});\n```",
+      "expectations": [
+        "Recognizes this is a well-designed set of animations and says so explicitly",
+        "Praises animating only `transform` and `opacity` throughout: these are GPU-composited properties that avoid layout reflow and paint (performance: composite-only properties)",
+        "Praises using `ease-out` for entering elements (dropdown open, toast show, scroll fade-in) and `ease-in` for exiting elements (toast hide) — correct easing directionality (Ch 1: ease-out for entering, ease-in for leaving)",
+        "Praises consistent duration scale: 100ms for press feedback, 200ms for dropdown, 300ms for toast entry, 400ms for scroll reveal — all within appropriate ranges and ordered by interaction importance (Ch 1: duration guidance)",
+        "Praises the `prefers-reduced-motion` media query that effectively disables all transitions and animations for users who need it (Ch 5: accessibility, vestibular disorders)",
+        "Praises `pointer-events: none` on the hidden dropdown to prevent interaction with invisible elements without removing from DOM (correct implementation detail)",
+        "Praises using Web Animations API with IntersectionObserver for scroll-triggered animations: avoids scroll-event jank and unobserves after trigger preventing repeat animations (Ch 3: Web Animations API for playback control)",
+        "Does NOT manufacture issues to appear thorough; any suggestions are explicitly framed as minor optional improvements"
+      ]
+    }
+  ]
+}

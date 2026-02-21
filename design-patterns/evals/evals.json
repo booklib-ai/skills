@@ -1,0 +1,46 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-strategy-pattern-if-else",
+      "prompt": "Review this Java code:\n\n```java\npublic class PaymentProcessor {\n    public void processPayment(String paymentType, double amount) {\n        if (paymentType.equals(\"CREDIT_CARD\")) {\n            System.out.println(\"Validating credit card...\");\n            System.out.println(\"Charging $\" + amount + \" to credit card\");\n            System.out.println(\"Sending credit card receipt\");\n        } else if (paymentType.equals(\"PAYPAL\")) {\n            System.out.println(\"Redirecting to PayPal...\");\n            System.out.println(\"Confirming PayPal payment of $\" + amount);\n            System.out.println(\"Sending PayPal confirmation email\");\n        } else if (paymentType.equals(\"CRYPTO\")) {\n            System.out.println(\"Opening crypto wallet...\");\n            System.out.println(\"Broadcasting transaction of $\" + amount);\n            System.out.println(\"Waiting for blockchain confirmation\");\n        } else if (paymentType.equals(\"BANK_TRANSFER\")) {\n            System.out.println(\"Initiating bank transfer...\");\n            System.out.println(\"Transferring $\" + amount + \" via ACH\");\n            System.out.println(\"Sending bank transfer confirmation\");\n        } else {\n            throw new IllegalArgumentException(\"Unknown payment type: \" + paymentType);\n        }\n    }\n    \n    public double calculateFee(String paymentType, double amount) {\n        if (paymentType.equals(\"CREDIT_CARD\")) {\n            return amount * 0.029 + 0.30;\n        } else if (paymentType.equals(\"PAYPAL\")) {\n            return amount * 0.034 + 0.30;\n        } else if (paymentType.equals(\"CRYPTO\")) {\n            return amount * 0.01;\n        } else if (paymentType.equals(\"BANK_TRANSFER\")) {\n            return 0.25;\n        } else {\n            throw new IllegalArgumentException(\"Unknown payment type: \" + paymentType);\n        }\n    }\n}\n```",
+      "expectations": [
+        "Identifies this as a prime Strategy pattern candidate — the payment algorithm varies by type",
+        "Calls out the Open-Closed Principle violation: adding a new payment method requires modifying this class",
+        "Notes that the parallel if/else chains in processPayment and calculateFee are a code smell (duplicated conditional logic)",
+        "Recommends extracting a PaymentStrategy interface with processPayment(double amount) and calculateFee(double amount) methods",
+        "Suggests concrete strategy classes: CreditCardStrategy, PayPalStrategy, CryptoStrategy, BankTransferStrategy",
+        "Describes the Context class (PaymentProcessor) holding a reference to the strategy interface",
+        "Notes that using a String 'paymentType' is fragile — a Map<String, PaymentStrategy> or enum-based lookup is safer",
+        "Provides a sketch of the refactored interface and at least one concrete implementation",
+        "References the principle: 'Encapsulate what varies' — payment behavior is what varies here"
+      ]
+    },
+    {
+      "id": "eval-02-unnecessary-singleton",
+      "prompt": "Review this Java code:\n\n```java\npublic class TaxCalculator {\n    private static TaxCalculator instance;\n    private double vatRate = 0.20;\n    private double salesTaxRate = 0.08;\n    \n    private TaxCalculator() {}\n    \n    public static TaxCalculator getInstance() {\n        if (instance == null) {\n            instance = new TaxCalculator();\n        }\n        return instance;\n    }\n    \n    public double calculateVAT(double price) {\n        return price * vatRate;\n    }\n    \n    public double calculateSalesTax(double price) {\n        return price * salesTaxRate;\n    }\n    \n    public void setVatRate(double vatRate) {\n        this.vatRate = vatRate;\n    }\n    \n    public void setSalesTaxRate(double salesTaxRate) {\n        this.salesTaxRate = salesTaxRate;\n    }\n}\n\n// Usage in application code:\nTaxCalculator calc = TaxCalculator.getInstance();\ncalc.setVatRate(0.23);  // Portuguese VAT\nOrderTotal total = calc.calculateVAT(orderAmount);\n```",
+      "expectations": [
+        "Identifies the Singleton pattern and flags it as misapplied here",
+        "Explains why global mutable state is dangerous: setVatRate() and setSalesTaxRate() make this Singleton a shared mutable object — one caller's rate change affects all other callers",
+        "Notes the race condition: getInstance() is not thread-safe (no synchronization, no double-checked locking, no holder idiom)",
+        "Points out that a stateless or value-parameterized object has no reason to be a Singleton — TaxCalculator is just computation",
+        "Recommends removing the Singleton and using simple instantiation or dependency injection",
+        "Suggests making TaxCalculator immutable: accept rates in the constructor, remove setters",
+        "May suggest using the Strategy pattern if tax rules vary by jurisdiction",
+        "References the anti-pattern: 'Singleton abuse — using Singleton as a global variable container rather than for genuine single-instance needs'"
+      ]
+    },
+    {
+      "id": "eval-03-observer-pattern-correct",
+      "prompt": "Review this Java code:\n\n```java\npublic interface StockObserver {\n    void update(String ticker, double price, double changePercent);\n}\n\npublic class StockMarket {\n    private final Map<String, List<StockObserver>> observers = new HashMap<>();\n    private final Map<String, Double> prices = new HashMap<>();\n    \n    public void registerObserver(String ticker, StockObserver observer) {\n        observers.computeIfAbsent(ticker, k -> new ArrayList<>()).add(observer);\n    }\n    \n    public void removeObserver(String ticker, StockObserver observer) {\n        List<StockObserver> tickerObservers = observers.get(ticker);\n        if (tickerObservers != null) {\n            tickerObservers.remove(observer);\n        }\n    }\n    \n    public void updatePrice(String ticker, double newPrice) {\n        double oldPrice = prices.getOrDefault(ticker, newPrice);\n        prices.put(ticker, newPrice);\n        double changePercent = oldPrice != 0 ? ((newPrice - oldPrice) / oldPrice) * 100 : 0;\n        notifyObservers(ticker, newPrice, changePercent);\n    }\n    \n    private void notifyObservers(String ticker, double price, double changePercent) {\n        List<StockObserver> tickerObservers = observers.getOrDefault(ticker, Collections.emptyList());\n        for (StockObserver observer : new ArrayList<>(tickerObservers)) {\n            observer.update(ticker, price, changePercent);\n        }\n    }\n}\n\npublic class PriceAlertService implements StockObserver {\n    private final double threshold;\n    \n    public PriceAlertService(double threshold) {\n        this.threshold = threshold;\n    }\n    \n    @Override\n    public void update(String ticker, double price, double changePercent) {\n        if (Math.abs(changePercent) >= threshold) {\n            System.out.println(\"ALERT: \" + ticker + \" moved \" + changePercent + \"% to $\" + price);\n        }\n    }\n}\n```",
+      "expectations": [
+        "Recognizes this as a correctly implemented Observer pattern and says so explicitly",
+        "Praises the use of a StockObserver interface (programming to an interface, not an implementation)",
+        "Praises the removeObserver method — the SKILL.md specifically flags 'Observer memory leaks — registered observers never unregistered' as an anti-pattern to catch",
+        "Praises the defensive copy 'new ArrayList<>(tickerObservers)' in notifyObservers, which prevents ConcurrentModificationException if an observer deregisters during notification",
+        "Praises per-ticker observer registration — observers only receive events for the tickers they care about",
+        "Does NOT manufacture fake issues just to have something to say",
+        "May offer optional improvements (e.g., thread safety with CopyOnWriteArrayList, using java.util.EventListener, or noting that prices map isn't thread-safe) but clearly frames these as non-critical suggestions"
+      ]
+    }
+  ]
+}
