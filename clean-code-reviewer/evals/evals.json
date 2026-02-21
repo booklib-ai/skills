@@ -23,7 +23,7 @@
         "Identifies C3: Redundant Comments — '# dictionary of users', '# Check if user exists', '# Return the user'",
         "Calls out C5: Commented-Out Code — both the uuid import and delete_user method",
         "Notes that get_user returns None — Don't Return Null (Ch. 7)",
-        "Mentions shadowing Python's built-in `id`",
+        "Flags the variable name `id` as a poor name — it's ambiguous (what kind of id? user_id? sequence number?), single-letter-level clarity in a non-trivial scope, and shadows Python's built-in function (N1: choose descriptive names; N4: unambiguous names)",
         "Notes the class name 'UserManager' is vague (Ch. 2: avoid Manager/Processor names)",
         "Suggests concrete refactored code"
       ]

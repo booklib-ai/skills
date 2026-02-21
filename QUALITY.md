@@ -1,12 +1,10 @@
 # Skill Quality Checklist
 
-Skills earn badges based on how many criteria they meet. The CLI enforces this automatically:
+Skills earn badges based on how many criteria they meet. The CLI enforces structure automatically:
 
 ```bash
 npx @booklib/skills check effective-kotlin     # check one skill
 npx @booklib/skills check --all                # summary for all skills
-npx @booklib/skills eval effective-kotlin      # run evals against Claude (needs ANTHROPIC_API_KEY)
-npx @booklib/skills eval effective-kotlin --id=eval-01-...  # run one eval
 ```
 
 ---
@@ -66,6 +64,34 @@ A skill that automates repetitive work.
 - [ ] **Scripts are self-contained** — document their dependencies; handle errors gracefully
 - [ ] **Scripts are referenced from SKILL.md** — agent knows when and how to run them
 - [ ] **`assets/`** — templates, config files, or diagrams that support the skill's workflow
+
+---
+
+## Eval Review Results
+
+Each skill's evals were reviewed by reading the SKILL.md instructions and verifying that the eval expectations follow from what the skill actually teaches. Issues found and fixed are noted below.
+
+| Skill | Evals | Eval verdict | Notes |
+|-------|-------|--------------|-------|
+| animation-at-work | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| clean-code-reviewer | 5 | ✅ Pass | Fixed eval-02: `id` shadowing expectation reframed to N1/N4 naming principles |
+| data-intensive-patterns | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| data-pipelines | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| design-patterns | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| domain-driven-design | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| effective-java | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| effective-kotlin | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| effective-python | 3 | ✅ Pass | Fixed eval-02: two expectations had wrong Item number references (Item 1→2 for PEP 8 comparison; Item 37 framing corrected for @dataclass) |
+| kotlin-in-action | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| lean-startup | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| microservices-patterns | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| refactoring-ui | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| storytelling-with-data | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| system-design-interview | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| using-asyncio-python | 3 | ✅ Pass | All expectations grounded in skill instructions |
+| web-scraping-python | 3 | ✅ Pass | All expectations grounded in skill instructions |
+
+**How "Pass" is determined:** each expectation was checked against the SKILL.md — does the skill's instruction explicitly or clearly imply that a model following it would produce output meeting this expectation? Expectations that tested general model knowledge rather than skill instructions were fixed to be grounded in what the skill teaches.
 
 ---
 
