@@ -29,6 +29,6 @@
 
 
 
-- [ ] Expand each skill to include `references/` docs with deeper content
+- [x] Expand each skill to include `references/` docs with deeper content
 - [ ] Add `scripts/` with reusable automation where applicable
-- [ ] Create a "skill quality checklist" and badge system for completeness
+- [x] Create a "skill quality checklist" and badge system for completeness (`QUALITY.md`)
