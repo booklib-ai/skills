@@ -20,7 +20,7 @@
         "Flags the 1.5s transition on `.nav-link` hover as far too slow for a hover feedback: users expect near-instant response (100-200ms) for hover states; a 1.5s delay makes the interface feel broken or laggy (Ch 1: duration guidance — micro-interactions 100-200ms; functional animations under 1s)",
         "Flags the 1.2s transition on `.card` hover for the same reason: hover lift effects should be 150-250ms to feel responsive",
         "Flags animating `top` on the card hover: `top` is a layout property that triggers reflow; recommends replacing with `transform: translateY(-4px)` which is GPU-accelerated (performance: animate composite properties only)",
-        "Flags animating `box-shadow` on the card: box-shadow triggers paint on every frame; recommends using a pseudo-element with opacity transition as a performance optimization, or accepting the paint cost with awareness",
+        "Flags animating `box-shadow` on the card: box-shadow is not a composite-only property (Ch. 3: only transform and opacity are GPU-composited and avoid layout/paint triggers); recommends replacing with a transform-based approach",
         "Flags the 800ms active/press feedback on `.icon-btn`: press feedback should be the fastest animation in the UI (100-150ms); 800ms means the animation outlasts the press itself and confuses the user",
         "Flags `ease-in-out` on all hover effects: `ease-in-out` is appropriate for elements that move and stay on screen, but for hover state changes `ease-out` is more natural (fast onset, settles gently)",
         "Notes the absence of a `prefers-reduced-motion` media query anywhere in the stylesheet"

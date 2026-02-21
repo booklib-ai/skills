@@ -10,7 +10,7 @@
         "Flags no CDN or load balancing (Ch 1): with a single Node.js process, the service cannot scale horizontally",
         "Questions the random collision strategy: random 6-character codes will have increasing collision probability as the table grows — needs a collision-resistant ID generation strategy (base-62 encoding of auto-increment ID, or a dedicated ID generator per Ch 7/8)",
         "Notes that 302 redirect means the browser does NOT cache the redirect — every click hits the server again; 301 is cacheable and reduces load for stable URLs (Ch 8 covers this trade-off explicitly)",
-        "Flags no analytics/expiry fields: typical URL shorteners need click counts, expiry dates, user ownership — the schema has none of these",
+        "Flags the absence of rate limiting on the URL creation endpoint — without it the service is open to spam and abuse (Ch. 4: rate limiter patterns protect APIs; a URL shortener creation endpoint is a prime abuse target)",
         "Recommends at minimum: back-of-envelope estimate first, Redis cache for redirects, read replicas for the DB, load balancer, and a more robust ID generation approach"
       ]
     },

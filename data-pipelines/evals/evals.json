@@ -22,7 +22,7 @@
         "Flags `if_exists='append'` with no deduplication: re-running appends duplicate rows; recommends staging table + MERGE or using a unique constraint with INSERT OR IGNORE (Ch 13: idempotency)",
         "Flags no data validation before loading: there is no check that the merge did not produce unexpected nulls in the region column or that row counts match expectations (Ch 10: validate at boundaries)",
         "Flags no logging beyond a single print statement: recommends structured logging of row counts at each stage, null rates, and merge match rate (Ch 12: monitoring and observability)",
-        "Notes `df['revenue'].apply(lambda x: ...)` is a row-wise Python loop inside pandas which is slow; recommends `pd.cut` or `np.where` for vectorized categorization (Ch 9: transformation efficiency)",
+        "Flags absence of data lineage tracking: no pipeline_run_id or audit column to identify which pipeline run produced each row, making debugging and reruns harder to trace (Ch 13: data lineage)",
         "Recommends adding a schema validation step after reading the CSV to catch missing or mistyped columns before transformations run (Ch 10: schema validation at ingestion)"
       ]
     },

@@ -7,7 +7,7 @@
         "Flags poor naming using N1 (theList, getThem, list1, x, d, t, f, n, r)",
         "Identifies F1: Too Many Arguments in processData (5 args)",
         "Identifies F3: Flag Arguments (boolean f)",
-        "Points out the deeply nested if-statements (G29: Avoid Negative Conditionals or guard clauses)",
+        "Points out the deeply nested positive if-statements; recommends guard clauses / early returns to flatten nesting (Ch. 3: functions should be small — blocks within if/else should be one line or a function call)",
         "Notes the function does multiple things: print, save, email, log (G30: Functions Should Do One Thing)",
         "Flags G25: magic number 4 in the comparison",
         "Suggests G28: Encapsulate Conditionals for the null/empty check",

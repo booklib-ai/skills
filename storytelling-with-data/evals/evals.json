@@ -22,8 +22,8 @@
         "Flags the heavy gridlines as chart junk (Ch 3): dark 1.5px gridlines compete with the data; if gridlines are needed, they should be very light grey (~#e5e7eb) and thin (0.5px)",
         "Flags the blue gradient background as chart junk — plot area backgrounds add noise without adding information; white or no background is correct",
         "Flags the chart border/drop shadow as chart junk — borders around charts imply the chart needs to be 'contained' and add visual noise",
-        "Flags the rotated Y-axis title — rotated text is harder to read; the axis title could often be removed if axis labels make the unit clear, or moved to be horizontal",
-        "Notes the data labels show '$125,432.00' — excessive precision; for a quarterly business review, '$125K' communicates the same information with far less clutter",
+        "Flags the rotated Y-axis title — violates the alignment principle (Ch. 5: Think Like a Designer — left-align text for readability; rotated/vertical text is harder to read and should be made horizontal or removed)",
+        "Notes the data labels show '$125,432.00' — excessive decimal precision is visual clutter with no informational value at this scale; '$125K' is clearer (Ch. 3: Eliminate Clutter; data-ink ratio — maximize the proportion of ink devoted to actual data)",
         "Notes the overlapping legend is a usability problem — direct labeling of regions on the chart would eliminate the need for a legend entirely",
         "Recommends: remove 3D, use flat 2D bars; remove gridlines or make them very light; white background; consistent color scheme (one color per region); direct labels; action-oriented title"
       ]

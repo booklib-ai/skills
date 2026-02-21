@@ -17,7 +17,7 @@
       "id": "eval-02-class-missing-dataclass",
       "prompt": "Review this Python code:\n\n```python\nclass Product:\n    def __init__(self, name, price, category, in_stock=True):\n        self.name = name\n        self.price = price\n        self.category = category\n        self.in_stock = in_stock\n\n    def get_name(self):\n        return self.name\n\n    def set_price(self, price):\n        if price < 0:\n            raise ValueError('Price cannot be negative')\n        self.price = price\n\n    def is_available(self):\n        return self.in_stock == True\n\n\nclass ProductCatalog:\n    def __init__(self):\n        self.__items = []\n\n    def add(self, product):\n        self.__items.append(product)\n\n    def find_by_category(self, category):\n        result = []\n        for p in self.__items:\n            if p.category == category:\n                result.append(p)\n        return result\n```",
       "expectations": [
-        "Identifies that `Product` is a plain data holder and recommends converting it to a `@dataclass` — eliminates the boilerplate `__init__`, provides automatic `__repr__` and `__eq__`, and makes the data-holder intent explicit (Pythonic style; complements Item 39: accept functions instead of simple classes)",
+        "Identifies that `Product` is a plain data holder and recommends converting it to a `@dataclass` — eliminates the boilerplate `__init__`, provides automatic `__repr__` and `__eq__`, and makes the data-holder intent explicit (Pythonic class design; Items 37–43: class and interface guidelines)",
         "Flags `get_name()` as a Java-style getter; Pythonic code uses direct attribute access (Item 44: use plain attributes over getter/setter methods)",
         "Flags `set_price()` as a Java-style setter; recommends replacing with `@property` with a setter that includes the validation (Item 44)",
         "Flags `self.in_stock == True` comparison; should be `return self.in_stock` (Item 2: Follow the PEP 8 Style Guide — never compare to True with ==)",
@@ -35,7 +35,7 @@
         "Praises the use of `@contextmanager` for resource management (Item 66: use contextlib for reusable try/finally patterns)",
         "Praises the generator function `read_records` for memory-efficient file reading (Item 30: consider generators instead of returning lists)",
         "Praises the generator function `process_batch` for lazy batch production without loading the entire sequence into memory (Item 30)",
-        "Praises type annotations and docstrings on all public functions (Items 84, 90)",
+        "Praises type annotations and docstrings on all public functions (Item 84: Write docstrings for all public APIs)",
         "Does NOT manufacture issues to appear thorough; any suggestions are explicitly framed as minor optional improvements",
         "May note minor optional suggestions such as using `itertools.islice` for batching, but frames them as stylistic alternatives, not violations"
       ]
