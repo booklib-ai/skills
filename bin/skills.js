@@ -532,8 +532,13 @@ async function main() {
           console.log(`  ${s.name.padEnd(nameW)}${s.icon}  ${c.dim(bar)}${failures}`);
         }
         const gold = summary.filter(s => ['gold', 'platinum'].includes(s.badge)).length;
+        const belowGold = summary.filter(s => !['gold', 'platinum'].includes(s.badge));
         console.log('  ' + c.line(60));
         console.log(c.dim(`\n  ${gold}/${skills.length} skills at Gold or above\n`));
+        if (belowGold.length) {
+          console.error(c.red(`  ✗ ${belowGold.length} skill(s) below Gold: ${belowGold.map(s => s.name).join(', ')}\n`));
+          process.exit(1);
+        }
       } else if (skillName) {
         const checks = checkSkill(skillName);
         printCheckResults(skillName, checks);

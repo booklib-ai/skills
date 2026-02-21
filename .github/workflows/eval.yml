@@ -1,0 +1,45 @@
+name: Eval
+
+on:
+  workflow_dispatch:
+    inputs:
+      skill:
+        description: Skill name (leave empty to run all)
+        required: false
+        default: ''
+      model:
+        description: Claude model to use
+        required: false
+        default: claude-haiku-4-5-20251001
+  schedule:
+    # Every Monday at 08:00 UTC
+    - cron: '0 8 * * 1'
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run evals
+        run: |
+          SKILL="${{ github.event.inputs.skill }}"
+          MODEL="${{ github.event.inputs.model || 'claude-haiku-4-5-20251001' }}"
+
+          if [ -n "$SKILL" ]; then
+            node bin/skills.js eval "$SKILL" --model="$MODEL"
+          else
+            for dir in */; do
+              skill="${dir%/}"
+              if [ -f "$skill/SKILL.md" ] && [ -f "$skill/evals/evals.json" ]; then
+                echo ""
+                node bin/skills.js eval "$skill" --model="$MODEL"
+              fi
+            done
+          fi
