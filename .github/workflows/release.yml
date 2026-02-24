@@ -19,7 +19,12 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Set version from tag
-        run: npm version ${GITHUB_REF_NAME#v} --no-git-tag-version
+        run: |
+          TAG_VERSION=${GITHUB_REF_NAME#v}
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            npm version $TAG_VERSION --no-git-tag-version
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
