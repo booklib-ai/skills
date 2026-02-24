@@ -1,0 +1,38 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-clear-single-skill",
+      "prompt": "Which skill should I use? I have this Python function and want to make it more Pythonic:\n\n```python\ndef get_items(items_list, filter_value, sort_by_name):\n    result = []\n    for item in items_list:\n        if item['category'] == filter_value:\n            result.append(item)\n    if sort_by_name:\n        result = sorted(result, key=lambda x: x['name'])\n    return result\n```",
+      "expectations": [
+        "Recommends effective-python as primary skill",
+        "Mentions that Pythonic idioms (list comprehensions, key functions, boolean flags) are effective-python's domain",
+        "Does NOT recommend clean-code-reviewer as primary (it's secondary at most)",
+        "Explains why (language-specific Pythonic advice vs general code quality)",
+        "Optionally mentions clean-code-reviewer as secondary for the flag argument (sort_by_name)"
+      ]
+    },
+    {
+      "id": "eval-02-conflict-case",
+      "prompt": "I'm designing a new service for our e-commerce platform. The service will handle order creation and needs to coordinate with the inventory and payment services. Here's a rough sketch:\n\n```python\nclass OrderService:\n    def create_order(self, customer_id, items):\n        # 1. Check inventory availability\n        # 2. Reserve inventory\n        # 3. Charge payment\n        # If payment fails, how do I release the reservation?\n        pass\n\n    def cancel_order(self, order_id):\n        # Need to reverse payment AND release inventory\n        # What if one fails?\n        pass\n```\n\nWhich skill should I use to design this coordination correctly?",
+      "expectations": [
+        "Identifies this as a design task, not a code review task",
+        "Recommends microservices-patterns as primary (service coordination, saga pattern)",
+        "Recommends domain-driven-design as secondary (order domain modeling)",
+        "Explains the distinction: microservices-patterns for inter-service coordination, DDD for domain model design",
+        "Does NOT recommend clean-code-reviewer (no code to review yet)",
+        "Does NOT recommend system-design-interview unless scale/estimation is mentioned"
+      ]
+    },
+    {
+      "id": "eval-03-already-routed",
+      "prompt": "Use the effective-java skill to review my enum usage:\n\n```java\npublic class OrderStatus {\n    public static final int PENDING = 0;\n    public static final int APPROVED = 1;\n    public static final int REJECTED = 2;\n    public static final int CANCELLED = 3;\n}\n```",
+      "expectations": [
+        "Confirms effective-java is the correct skill (already specified by user)",
+        "Does NOT override the user's skill choice",
+        "Optionally notes which Effective Java item applies (Item 34: Use enums instead of int constants)",
+        "May note clean-code-reviewer would also flag this (J3: Constants vs Enums) but defers to user's choice",
+        "Does not second-guess or add unnecessary routing complexity"
+      ]
+    }
+  ]
+}

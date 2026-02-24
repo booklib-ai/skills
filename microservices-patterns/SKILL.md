@@ -177,3 +177,143 @@ Priority-ordered list of improvements, from most critical to nice-to-have.
   (independent deployment, team autonomy, technology diversity) outweigh the costs.
 - For deeper pattern details, read `references/patterns-catalog.md` before generating code.
 - For review checklists, read `references/review-checklist.md` before reviewing code.
+
+---
+
+## Mode 3: Service Migration Planning
+
+**Trigger phrases:** "decompose my monolith", "migrate to microservices", "strangle the monolith", "extract a service from"
+
+You are helping a developer plan an incremental migration from a monolith (or distributed monolith) to a microservices architecture. The goal is a **phased migration** using the Strangler Fig pattern — the monolith keeps running while services are extracted one at a time.
+
+### Step 1 — Assess Current State
+
+Classify the system as one of:
+- **Monolith** — Single deployable unit, single database. Starting point for decomposition.
+- **Distributed Monolith** — Multiple services but tightly coupled (shared database, synchronous chains, must deploy together). Often worse than a monolith.
+- **Partly Decomposed** — Some services extracted but shared databases or tight coupling remain.
+
+Flag the critical problems:
+- Shared databases (which tables are shared by which modules?)
+- Synchronous call chains (A → B → C → D, fragile under failure)
+- Missing circuit breakers
+- No compensating transactions for cross-boundary operations
+
+### Step 2 — Phase 1: Identify Boundaries (No Code Change)
+
+**Goal:** Map business capabilities and propose service boundaries before touching code.
+**Risk:** Zero — analysis only.
+
+Actions:
+- Map business capabilities (Order Management, Inventory, Billing, Notifications, etc.)
+- Identify which capabilities are most independent (least shared database tables)
+- Propose decomposition using **Decompose by Business Capability**
+- Draw a capability map: which capabilities share data? Which are truly isolated?
+
+Output: A capability map table showing each candidate service, its data ownership, and coupling level.
+
+**Definition of Done:** Agreement on which service to extract first (least-coupled capability).
+
+### Step 3 — Phase 2: Strangle the Monolith (Low-Risk)
+
+**Goal:** Extract one service at a time using the Strangler Fig pattern.
+**Risk:** Low if done incrementally — monolith keeps running.
+
+Strategy:
+- Start with the **least-coupled** capability (fewest shared tables, fewest synchronous callers)
+- Build the new service alongside the monolith
+- Route new traffic to the new service; keep the monolith handling old traffic
+- Once the new service is stable, cut over the monolith's callers
+
+Order of extraction (typical):
+1. Leaf services (no downstream dependencies) — e.g., Notifications
+2. Read-heavy services (can duplicate read models first)
+3. Write-heavy services (require database decoupling first)
+
+**Definition of Done:** First service deployed independently. Monolith no longer owns that capability.
+
+### Step 4 — Phase 3: Database Decoupling (Medium-Risk)
+
+**Goal:** Give each service its own private database.
+**Risk:** Medium — requires data migration and API contracts between services.
+
+Actions:
+- Identify shared tables; assign ownership to one service
+- Replace shared table reads with API calls or event subscriptions
+- Use the **Database per Service** pattern: each service's schema is off-limits to other services
+- For data that must stay consistent, plan eventual consistency via domain events
+
+Patterns to apply:
+- **Shared Database → separate schemas**: One service owns the table; others read via API
+- **API Composition** for cross-service queries (replaces direct joins)
+- **Domain events** to propagate state changes asynchronously
+
+**Definition of Done:** No service reads from another service's database directly. All cross-service data flows through APIs or events.
+
+### Step 5 — Phase 4: Async Communication (Medium-Risk)
+
+**Goal:** Replace synchronous call chains with messaging; add resilience.
+**Risk:** Medium — changes communication model across services.
+
+Actions:
+- Replace synchronous A → B → C chains with publish/subscribe messaging
+- Add **Circuit Breakers** for remaining synchronous calls (fail fast, fallback)
+- Make message handlers **idempotent** (handle duplicate messages safely)
+- Use **Transactional Outbox** to ensure events are published atomically with database writes
+
+**Definition of Done:** No synchronous chains longer than 2 hops. All event handlers are idempotent.
+
+### Step 6 — Phase 5: Distributed Transactions (High-Risk, As Needed)
+
+**Goal:** Handle multi-service operations that require consistency.
+**Risk:** High — Saga implementation requires careful design of compensating transactions.
+
+Apply when: a single user action must atomically update data owned by 2+ services (e.g., creating an order must both charge payment and reserve inventory).
+
+Actions:
+- Identify cross-service operations requiring consistency
+- Design **Sagas** (choreography or orchestration) with compensating transactions for each step
+- For orchestration: implement a Saga orchestrator state machine
+- For choreography: design event sequences and compensation events
+- Test failure scenarios explicitly
+
+**Definition of Done:** Every multi-service operation has a defined happy path and compensation path. No distributed transactions use 2PC.
+
+### Migration Output Format
+
+```
+## Service Migration Plan: [System Name]
+
+### Current State Assessment
+**Classification:** Monolith
+**Shared databases:** Orders table shared by OrderModule and BillingModule
+**Synchronous chains:** API Gateway → OrderService → InventoryService → NotificationService (3-hop chain)
+
+### Capability Map
+| Capability | Candidate Service | Shared Tables | Coupling Level |
+|------------|------------------|---------------|----------------|
+| Notifications | NotificationService | None | Low — extract first |
+| Inventory | InventoryService | inventory, products | Medium |
+| Orders | OrderService | orders, line_items, payments | High — extract last |
+
+### Phase 1 — Boundaries (start now, no code change)
+- [ ] Agree on service boundaries based on capability map above
+- [ ] Identify NotificationService as first extraction target
+
+### Phase 2 — Strangle the Monolith (next quarter)
+- [ ] Build NotificationService alongside monolith
+- [ ] Route notification calls to new service via API Gateway
+- [ ] Decommission notification code from monolith
+
+### Phase 3 — Database Decoupling (following quarter)
+- [ ] Assign `notifications` table to NotificationService exclusively
+- [ ] Replace OrderModule's direct DB read of customer email with API call to CustomerService
+
+### Phase 4 — Async Communication (6 months)
+- [ ] Replace OrderService → NotificationService sync call with OrderCreated domain event
+- [ ] Add Circuit Breaker to InventoryService call from OrderService
+
+### Phase 5 — Distributed Transactions (as needed)
+- [ ] Design CreateOrderSaga: reserve inventory → charge payment → confirm order
+- [ ] Define compensating transactions: release inventory, void charge
+```

@@ -96,6 +96,7 @@ cp -r skills/effective-kotlin /path/to/project/.claude/skills/
 | [lean-startup](./lean-startup/) | Practices from Eric Ries' *The Lean Startup* — MVP testing, validated learning, Build-Measure-Learn loop, and pivots |
 | [microservices-patterns](./microservices-patterns/) | Expert guidance on microservices patterns from Chris Richardson's *Microservices Patterns* — decomposition, sagas, API gateways, event sourcing, CQRS, and service mesh |
 | [refactoring-ui](./refactoring-ui/) | UI design principles from *Refactoring UI* by Adam Wathan & Steve Schoger — visual hierarchy, layout, typography, and color |
+| [skill-router](./skill-router/) | Selects the 1-2 most relevant `@booklib/skills` for a given task — routes by language, domain, and work type with conflict resolution |
 | [storytelling-with-data](./storytelling-with-data/) | Data visualization and storytelling from Cole Nussbaumer Knaflic's *Storytelling with Data* — effective visuals, decluttering, and narrative structure |
 | [system-design-interview](./system-design-interview/) | System design principles from Alex Xu's *System Design Interview* — scaling, estimation, and real-world system designs |
 | [using-asyncio-python](./using-asyncio-python/) | Asyncio practices from Caleb Hattingh's *Using Asyncio in Python* — coroutines, event loop, tasks, and signal handling |

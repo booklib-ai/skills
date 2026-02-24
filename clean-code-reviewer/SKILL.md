@@ -290,3 +290,111 @@ This is the definitive checklist. Reference these codes in reviews.
 ## Tone
 
 Be direct but constructive. You're a senior colleague doing a thoughtful code review, not a professor grading an exam. Assume the author is competent and point out the path to better code. Celebrate what's already clean. Remember the Boy Scout Rule: leave the code cleaner than you found it.
+---
+
+## Mode 3: Migration Planning
+
+**Trigger phrases:** "migrate", "incrementally improve", "ratchet toward clean code", "legacy cleanup plan"
+
+You are helping a developer incrementally migrate a legacy codebase toward Clean Code standards — without big-bang rewrites. The goal is a **phased, low-risk migration plan** where each phase delivers standalone value.
+
+### Step 1 — Inventory
+
+List every smell found, tagged with:
+- Severity: 🔴 Critical / 🟡 Important / 🟢 Suggestion
+- Heuristic code (e.g., G5, N1, F3)
+- Location (class/method name)
+
+Present as a table:
+| Smell | Location | Severity | Heuristic |
+|-------|----------|----------|-----------|
+
+### Step 2 — Phase 1: Names & Comments (Zero-Risk)
+
+**Goal:** Rename identifiers and clean comments with no structural change.
+**Risk:** Near zero — no logic changes, safe to do in one PR.
+
+Actions:
+- Rename variables, methods, classes to intention-revealing names (N1, N4)
+- Delete redundant, journal, and noise comments (C1, C3, C5)
+- Remove commented-out code (C5)
+- Add missing names for magic numbers (G25)
+
+Output: A checklist of rename operations with before/after pairs.
+
+**Definition of Done:** No cryptic names survive. All comments add information not in the code.
+
+### Step 3 — Phase 2: Functions (Low-Risk)
+
+**Goal:** Refactor function shapes without changing class structure.
+**Risk:** Low — changes are local to individual functions.
+
+Actions:
+- Extract functions to enforce Single Responsibility (G30)
+- Reduce argument lists > 3; introduce Parameter Objects where needed (F1)
+- Eliminate flag arguments by splitting into two functions (F3)
+- Replace output arguments with return values or OO methods (F2)
+- Add guard clauses / early returns to flatten nesting
+
+Output: Before/after snippets for each refactored function.
+
+**Definition of Done:** No function exceeds 20 lines. No function takes more than 3 arguments. No flag arguments remain.
+
+### Step 4 — Phase 3: Classes (Medium-Risk)
+
+**Goal:** Reshape class responsibilities. Requires more planning than Phase 2.
+**Risk:** Medium — touching class boundaries may affect callers.
+
+Actions:
+- Apply SRP: split classes with multiple reasons to change (Ch. 10)
+- Reduce coupling; eliminate Feature Envy (G14)
+- Encapsulate conditionals into well-named predicate methods (G28)
+- Replace switch statements with polymorphism (G23)
+- Eliminate data/object hybrids (Ch. 6)
+
+Output: A class diagram showing before/after split, with migration order (most isolated first).
+
+**Definition of Done:** Each class has one clear responsibility describable without "and" or "or."
+
+### Step 5 — Phase 4: Architecture (High-Risk)
+
+**Goal:** Structural changes that affect multiple classes or modules.
+**Risk:** High — requires careful testing before and after.
+
+Actions:
+- Refactor error handling: replace error codes with exceptions; remove null returns (Ch. 7)
+- Fix Law of Demeter violations; restructure train wrecks (G36)
+- Eliminate remaining DRY violations with shared abstractions (G5)
+- Enforce consistent abstraction levels per function (G6, G34)
+
+Output: Architecture diff showing before/after with integration points.
+
+**Definition of Done:** No error codes remain. No null returns. No train wrecks. Duplication eliminated.
+
+### Migration Output Format
+
+```
+## Migration Plan: [ClassName/Module]
+
+### Smell Inventory
+| Smell | Location | Severity | Heuristic |
+|-------|----------|----------|-----------|
+...
+
+### Phase 1 — Names & Comments (start immediately)
+- [ ] Rename `x` → `pendingOrderCount` in OrderProcessor.process()
+- [ ] Delete journal comment at line 3
+- [ ] Delete commented-out `sendEmail()` block
+**Before:** `int x = getList().size();`
+**After:** `int pendingOrderCount = getPendingOrders().size();`
+
+### Phase 2 — Functions (next sprint)
+- [ ] Extract `validateInput()` from `processOrder()` (lines 45-67)
+- [ ] Split `handleRequest(boolean isAdmin)` → `handleAdminRequest()` + `handleUserRequest()`
+
+### Phase 3 — Classes (following sprint)
+- [ ] Split `UserService` into `AuthenticationService` + `NotificationService`
+
+### Phase 4 — Architecture (planned, requires test coverage first)
+- [ ] Replace error code returns in `FileProcessor` with typed exceptions
+```

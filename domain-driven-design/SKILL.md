@@ -219,3 +219,123 @@ Priority-ordered list of improvements, from most critical to nice-to-have.
   but the patterns are framework-agnostic.
 - For deeper pattern details, read `references/patterns-catalog.md` before generating code.
 - For review checklists, read `references/review-checklist.md` before reviewing code.
+
+---
+
+## Mode 3: Domain Migration Planning
+
+**Trigger phrases:** "migrate to DDD", "enrich my domain model", "extract value objects from", "refactor toward DDD", "strangler fig for domain"
+
+You are helping a developer incrementally migrate an existing codebase toward Domain-Driven Design — without a full rewrite. The goal is a **phased migration plan** that progressively enriches the domain model, reduces Primitive Obsession, and establishes proper Aggregate boundaries.
+
+### Step 1 — Assess Current State
+
+Classify the codebase as one of:
+- **Transaction Script** — Procedural service methods manipulating passive data objects. All logic in services, domain objects are mere structs.
+- **Anemic Domain Model** — Classes look like Entities but have only getters/setters. Business logic lives in services.
+- **Partial DDD** — Some patterns applied (e.g., Value Objects exist) but boundaries are fuzzy or Aggregates are anemic.
+
+Identify the worst anti-patterns present (Primitive Obsession, missing invariant enforcement, broken Bounded Contexts, leaking infrastructure).
+
+### Step 2 — Phase 1: Ubiquitous Language (Zero-Risk)
+
+**Goal:** Rename classes and methods to domain terms. No structural change.
+**Risk:** Near zero — rename-only refactoring.
+
+Actions:
+- Rename technical names to domain language (e.g., `UserData` → `Customer`, `ItemManager` → `InventoryService`)
+- Build a Ubiquitous Language glossary mapping old names → new names
+- Ensure method names reflect domain operations (e.g., `updateStatus(2)` → `approve()`)
+
+**Definition of Done:** A domain expert can read class and method names without a translator.
+
+### Step 3 — Phase 2: Value Objects (Low-Risk)
+
+**Goal:** Extract Primitive Obsession into immutable Value Objects.
+**Risk:** Low — additive change; old primitives gradually replaced.
+
+Actions:
+- Identify primitives used as domain concepts: orderId (String), price (double), email (String)
+- Create immutable Value Objects with validation in constructor: `OrderId`, `Money`, `Email`
+- Replace primitive usages one class at a time
+- Add equality semantics (attribute-based equality, not identity)
+
+Before: `String email = "user@example.com";`
+After: `Email email = Email.of("user@example.com"); // validates format`
+
+**Definition of Done:** No primitive types represent domain concepts in Entity constructors or method signatures.
+
+### Step 4 — Phase 3: Aggregate Boundaries (Medium-Risk)
+
+**Goal:** Define Aggregate roots and enforce invariants inside them.
+**Risk:** Medium — changes cascade to callers and repositories.
+
+Actions:
+- Identify clusters of objects that change together (Aggregate candidates)
+- Designate Aggregate roots; route all external access through them
+- Remove external setters; enforce invariants via domain methods
+- Reference other Aggregates by ID only (no direct object references across boundaries)
+- Wrap related creation logic in Factory methods
+
+**Definition of Done:** No code outside an Aggregate can violate its invariants. Cross-Aggregate references are by ID only.
+
+### Step 5 — Phase 4: Repositories & Domain Services (Medium-Risk)
+
+**Goal:** Add Repository interfaces per Aggregate root; extract Domain Services.
+**Risk:** Medium — requires infrastructure layer changes.
+
+Actions:
+- Add a Repository interface (domain layer) for each Aggregate root
+- Move persistence implementation to infrastructure; domain layer knows nothing about databases
+- Extract operations that don't belong to any Entity into stateless Domain Services
+- Name Domain Services in Ubiquitous Language
+
+**Definition of Done:** Domain layer has zero imports from persistence frameworks. Each Aggregate root has exactly one Repository.
+
+### Step 6 — Phase 5: Strategic Design (High-Risk, Optional)
+
+**Goal:** Identify Bounded Contexts; protect domain model from external systems.
+**Risk:** High — may require restructuring module/package boundaries.
+
+Actions:
+- Map Bounded Contexts (where does one domain model end and another begin?)
+- Build Anticorruption Layers for external integrations (legacy systems, third-party APIs)
+- Identify Shared Kernels vs. Customer/Supplier relationships between contexts
+- Apply Strangler Fig if migrating from a monolith: route new domain through new model, keep legacy running
+
+**Definition of Done:** Each Bounded Context has a clear boundary. External models don't corrupt the core domain.
+
+### Migration Output Format
+
+```
+## DDD Migration Plan: [System/Module Name]
+
+### Current State Assessment
+**Classification:** Anemic Domain Model
+**Key anti-patterns:** Primitive Obsession (orderId as String), external setters on Order, all logic in OrderService
+
+### Phase 1 — Ubiquitous Language (start now)
+- [ ] Rename `OrderData` → `Order`
+- [ ] Rename `processOrder()` → `placeOrder()`
+**Glossary:**
+| Old Name | New Name | Reason |
+|----------|----------|--------|
+| OrderData | Order | Domain entity, not a data bag |
+
+### Phase 2 — Value Objects (next sprint)
+- [ ] Extract `OrderId` from `String orderId`
+- [ ] Extract `Money` from `double price`
+**Before:** `double price = 99.99;`
+**After:** `Money price = Money.of(new BigDecimal("99.99"), Currency.USD);`
+
+### Phase 3 — Aggregate Boundaries (following sprint)
+- [ ] Make Order the Aggregate root; remove direct LineItem mutation from OrderController
+- [ ] Add `Order.addLineItem(LineItem)` enforcing max-items invariant
+
+### Phase 4 — Repositories & Services (planned)
+- [ ] Add `OrderRepository` interface in domain layer
+- [ ] Extract `PricingService` from `OrderService.calculateTotal()`
+
+### Phase 5 — Strategic Design (future)
+- [ ] Identify Billing Context boundary; add ACL to translate Payment gateway model
+```

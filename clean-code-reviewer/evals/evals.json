@@ -62,6 +62,124 @@
         "Notes 'new File(path)' never returns null, so the null check is G9: Dead Code",
         "Suggests exception-based refactoring with meaningful exception classes"
       ]
+    },
+    {
+      "id": "eval-06-switch-polymorphism",
+      "prompt": "Review this Java code:\n\n```java\npublic class PaymentProcessor {\n    public double calculateFee(Payment payment) {\n        switch (payment.getType()) {\n            case CREDIT_CARD: return payment.getAmount() * 0.029 + 0.30;\n            case DEBIT_CARD:  return payment.getAmount() * 0.015;\n            case PAYPAL:      return payment.getAmount() * 0.034 + 0.30;\n            case BANK_TRANSFER: return 2.50;\n            default: throw new IllegalArgumentException(\"Unknown type\");\n        }\n    }\n\n    public String getReceiptLabel(Payment payment) {\n        switch (payment.getType()) {\n            case CREDIT_CARD:   return \"Credit Card Payment\";\n            case DEBIT_CARD:    return \"Debit Card Payment\";\n            case PAYPAL:        return \"PayPal Transaction\";\n            case BANK_TRANSFER: return \"Bank Wire Transfer\";\n            default: throw new IllegalArgumentException(\"Unknown type\");\n        }\n    }\n\n    public boolean requiresCvv(Payment payment) {\n        switch (payment.getType()) {\n            case CREDIT_CARD:\n            case DEBIT_CARD: return true;\n            default:         return false;\n        }\n    }\n}\n```",
+      "expectations": [
+        "Flags G23: Prefer Polymorphism to If/Else or Switch/Case — the three switch blocks are the central issue",
+        "Notes G27: Structure over Convention — the repeated switch structure relies on developer discipline rather than compiler enforcement",
+        "Identifies the Open/Closed Principle violation: adding a new payment type requires modifying three separate switch statements",
+        "Suggests replacing the type enum with an abstract PaymentMethod class (or interface) with polymorphic methods: calculateFee(), getReceiptLabel(), requiresCvv()",
+        "Recommends an abstract factory or registry pattern so new payment types can be added without touching existing code",
+        "Notes that G25 (magic numbers) applies to the hardcoded fee percentages like 0.029 and 0.034"
+      ]
+    },
+    {
+      "id": "eval-07-dry-violation-copy-paste",
+      "prompt": "Review this Python code:\n\n```python\ndef validate_and_process_order(order_data: dict) -> dict:\n    if not order_data.get('customer_id'):\n        raise ValueError('customer_id is required')\n    if not order_data.get('items'):\n        raise ValueError('items cannot be empty')\n    if order_data.get('total', 0) <= 0:\n        raise ValueError('total must be positive')\n\n    enriched = {\n        **order_data,\n        'status': 'pending',\n        'created_at': datetime.utcnow().isoformat(),\n        'source': 'orders',\n    }\n    db.collection('orders').insert(enriched)\n    audit_log.record('created', enriched['customer_id'], enriched)\n    return enriched\n\n\ndef validate_and_process_invoice(invoice_data: dict) -> dict:\n    if not invoice_data.get('customer_id'):\n        raise ValueError('customer_id is required')\n    if not invoice_data.get('items'):\n        raise ValueError('items cannot be empty')\n    if invoice_data.get('total', 0) <= 0:\n        raise ValueError('total must be positive')\n\n    enriched = {\n        **invoice_data,\n        'status': 'pending',\n        'created_at': datetime.utcnow().isoformat(),\n        'source': 'invoices',\n    }\n    db.collection('invoices').insert(enriched)\n    audit_log.record('created', enriched['customer_id'], enriched)\n    return enriched\n```",
+      "expectations": [
+        "Flags G5: Duplication — the two functions share identical validation logic and near-identical enrichment/persistence logic",
+        "Identifies the specific repeated pattern: the three validation checks are copy-pasted verbatim between both functions",
+        "Suggests extracting a shared _validate_document(data) helper to eliminate the duplicated validation block",
+        "Recommends parameterizing the differing parts (collection name, source label) so a single _create_document(data, collection, source) function handles both cases",
+        "Notes that the Template Method pattern (or simple parameterization) is the right tool here — the algorithm skeleton is identical, only a few values differ",
+        "Points out that future changes to validation rules (e.g., adding a due_date check) must be applied in two places, a maintenance hazard"
+      ]
+    },
+    {
+      "id": "eval-08-large-class-srp",
+      "prompt": "Review this Java code:\n\n```java\npublic class UserService {\n    private final DataSource dataSource;\n    private final JavaMailSender mailSender;\n\n    public User authenticate(String username, String password) {\n        User user = findByUsername(username);\n        if (user == null || !BCrypt.checkpw(password, user.getPasswordHash()))\n            throw new AuthenticationException(\"Invalid credentials\");\n        user.setLastLogin(Instant.now());\n        return user;\n    }\n\n    public void sendWelcomeEmail(User user) {\n        MimeMessage msg = mailSender.createMimeMessage();\n        msg.setRecipient(Message.RecipientType.TO, new InternetAddress(user.getEmail()));\n        msg.setSubject(\"Welcome to the platform!\");\n        msg.setText(buildWelcomeBody(user));\n        mailSender.send(msg);\n    }\n\n    public void save(User user) {\n        try (Connection conn = dataSource.getConnection()) {\n            PreparedStatement ps = conn.prepareStatement(\n                \"INSERT INTO users (id, name, email, password_hash) VALUES (?,?,?,?)\");\n            ps.setString(1, user.getId()); ps.setString(2, user.getName());\n            ps.setString(3, user.getEmail()); ps.setString(4, user.getPasswordHash());\n            ps.executeUpdate();\n        }\n    }\n\n    public byte[] generateUserReport(User user) {\n        // ... build PDF with user activity stats\n    }\n}\n```",
+      "expectations": [
+        "Flags SRP violation (Ch. 10): the class has at least four distinct reasons to change — authentication logic, email delivery, database persistence, and report generation",
+        "Names each responsibility explicitly: authentication (AuthenticationService), email (UserEmailService or WelcomeEmailSender), persistence (UserRepository), reporting (UserReportService)",
+        "Notes that the class name 'UserService' is too vague — the Manager/Service anti-pattern (Ch. 2: avoid generic nouns that obscure intent)",
+        "Recommends splitting into focused, single-responsibility classes so each can evolve and be tested independently",
+        "Observes that mixing infrastructure concerns (JDBC, SMTP) with domain logic in one class makes unit testing difficult without heavy mocking"
+      ]
+    },
+    {
+      "id": "eval-09-bad-unit-tests",
+      "prompt": "Review this Python test code:\n\n```python\nclass TestOrderWorkflow(unittest.TestCase):\n    processed_order_id = None\n\n    def test_1_create_order(self):\n        order = order_service.create({'item': 'book', 'qty': 2})\n        TestOrderWorkflow.processed_order_id = order.id\n        self.assertIsNotNone(order.id)\n\n    def test_2_process_payment(self):\n        # depends on test_1_create_order having run first\n        result = payment_service.charge(TestOrderWorkflow.processed_order_id, 29.99)\n        self.assertTrue(result.success)\n\n    def test_sync_with_warehouse(self):\n        import time\n        time.sleep(5)  # wait for warehouse API to be ready\n        resp = warehouse_client.sync(order_id=42)\n        print('Sync response:', resp)\n\n    def test_validate_order_fields(self):\n        order = Order(item='book', qty=2, price=9.99, customer='Alice',\n                      address='123 Main St', coupon='SAVE10')\n        self.assertEqual(order.item, 'book')\n        self.assertEqual(order.qty, 2)\n        self.assertGreater(order.price, 0)\n        self.assertIsNotNone(order.customer)\n        self.assertTrue(order.address.startswith('123'))\n        self.assertEqual(order.coupon, 'SAVE10')\n```",
+      "expectations": [
+        "Flags T9: Tests Should Be Fast — time.sleep(5) makes the test suite slow; the warehouse call should be mocked, not awaited with a sleep",
+        "Flags Independence violation (F.I.R.S.T. — Independent): test_2_process_payment depends on test_1_create_order via shared class state, so tests cannot be run in isolation or in arbitrary order",
+        "Flags T1: Insufficient Tests — test_sync_with_warehouse uses only print() and has no assertions; a test with no assert proves nothing",
+        "Flags Single Concept per test (Ch. 9): test_validate_order_fields asserts six unrelated fields in one test, making failure diagnosis harder; each concept should have its own focused test",
+        "Recommends applying F.I.R.S.T. principles: Fast, Independent, Repeatable, Self-Validating, Timely",
+        "Suggests using setUp() or fixtures to create fresh order state for each test instead of relying on class-level shared state"
+      ]
+    },
+    {
+      "id": "eval-10-data-object-hybrid",
+      "prompt": "Review this Java code:\n\n```java\npublic class Customer {\n    public String id;\n    public String name;\n    public String email;\n    public List<Order> orderHistory;\n    public Address billingAddress;\n\n    public double calculateLifetimeValue() {\n        return orderHistory.stream()\n            .mapToDouble(Order::getTotal)\n            .sum();\n    }\n\n    public boolean isEligibleForLoyaltyReward() {\n        return calculateLifetimeValue() > 500.0\n            && orderHistory.size() >= 5;\n    }\n\n    public void updateEmail(String newEmail) {\n        if (newEmail == null || !newEmail.contains(\"@\"))\n            throw new IllegalArgumentException(\"Invalid email: \" + newEmail);\n        this.email = newEmail;\n    }\n}\n```",
+      "expectations": [
+        "Flags Ch. 6 Data/Object anti-symmetry: the class simultaneously exposes all its fields as public (data structure behavior) and provides business methods that operate on that data (object behavior), making it a hybrid",
+        "Explains the hybrid is the worst of both worlds: it neither grants the procedural flexibility of a plain data structure nor provides the encapsulation benefits of a proper object",
+        "Notes the asymmetry rule: data structures expose data and have no significant behavior; objects hide data behind an abstraction and expose behavior",
+        "Recommends choosing one design: either a pure DTO/record with all public fields and no behavior, or a proper domain object with private fields, encapsulated state, and meaningful methods",
+        "Points out that public fields like orderHistory and billingAddress give callers unrestricted mutation access, undermining updateEmail's attempt at encapsulation",
+        "Suggests that if business logic is needed, make all fields private and expose only intentional behavior through methods"
+      ]
+    },
+    {
+      "id": "eval-11-concurrency-shared-mutable-state",
+      "prompt": "Review this Java code:\n\n```java\npublic class RequestMetrics {\n    private static int totalRequests = 0;\n    private static int failedRequests = 0;\n    private static final List<String> recentErrors = new ArrayList<>();\n\n    public static void recordSuccess() {\n        totalRequests++;\n    }\n\n    public static void recordFailure(String errorMessage) {\n        totalRequests++;\n        failedRequests++;\n        recentErrors.add(errorMessage);\n        if (recentErrors.size() > 100) {\n            recentErrors.remove(0);\n        }\n    }\n\n    public static double getErrorRate() {\n        if (totalRequests == 0) return 0.0;\n        return (double) failedRequests / totalRequests;\n    }\n\n    public static List<String> getRecentErrors() {\n        return recentErrors;\n    }\n}\n```",
+      "expectations": [
+        "Flags Ch. 13 shared mutable state: totalRequests, failedRequests, and recentErrors are static mutable fields accessed by multiple threads with no synchronization, creating race conditions",
+        "Recommends replacing the int counters with AtomicInteger (or LongAdder for high-throughput) to make increments atomic without explicit locking",
+        "Recommends replacing ArrayList with a thread-safe structure such as ConcurrentLinkedDeque or a synchronized wrapper for recentErrors",
+        "Notes that getRecentErrors() returns the live mutable list — callers can modify it externally; it should return a defensive copy or an unmodifiable view",
+        "Flags SRP for concurrency (Ch. 13): concurrency policy (how state is protected) is mixed with metrics logic (what is recorded); these concerns should be separated",
+        "Suggests that immutability or publishing only copies of state is the safest concurrency strategy, and references the recommendation to keep synchronized sections as small as possible"
+      ]
+    },
+    {
+      "id": "eval-12-naming-scope-abstraction",
+      "prompt": "Review this Python code:\n\n```python\ndef build_recommendation_payload(user_profile, catalog_snapshot):\n    i = [item for item in catalog_snapshot if item['active']]\n    j = [item for item in i if item['category'] in user_profile['preferred_categories']]\n    k = sorted(j, key=lambda item: item['score'], reverse=True)[:20]\n\n    data = {}\n    for item in k:\n        result = pricing_engine.lookup(item['sku'], user_profile['region'])\n        data[item['sku']] = {\n            'title': item['title'],\n            'price': result['final_price'],\n            'badge': result['promo_badge'],\n        }\n\n    return data\n\n\nclass RecommendationService:\n    def get_info(self, user_id: str):\n        conn = self._db_pool.acquire()\n        try:\n            row = conn.execute(\n                'SELECT preferences, region FROM users WHERE id = ?', (user_id,)\n            ).fetchone()\n            return dict(row) if row else None\n        finally:\n            self._db_pool.release(conn)\n```",
+      "expectations": [
+        "Flags N5: Use Long Names for Long Scopes — i, j, k are used across the full body of build_recommendation_payload (a multi-line function), not inside a tiny loop; they should be named active_items, category_matches, and top_ranked_items",
+        "Flags N2: Names Should Be at the Appropriate Level of Abstraction — data and result are too vague for objects holding structured pricing and recommendation payloads; names like recommendations_by_sku and pricing_result convey intent",
+        "Flags N7: Names Should Describe Side-Effects — get_info() acquires a database connection and executes a query, which is a significant side effect; a name like fetch_user_profile() or load_user_preferences() accurately describes what the method does",
+        "Notes that the misleading get_ prefix suggests a cheap accessor but hides I/O and resource management, violating the principle of least surprise",
+        "Provides concrete better names for all flagged identifiers: active_items, category_matches, top_ranked_items, recommendations_by_sku, pricing_result, fetch_user_profile"
+      ]
+    },
+    {
+      "id": "eval-13-already-clean-python",
+      "prompt": "Review this Python code:\n\n```python\nfrom dataclasses import dataclass, field\nfrom datetime import date\nfrom typing import ClassVar\n\n\n@dataclass(frozen=True)\nclass DateRange:\n    start: date\n    end: date\n    MAX_SPAN_DAYS: ClassVar[int] = 365\n\n    def __post_init__(self) -> None:\n        if self.end < self.start:\n            raise ValueError(\n                f\"end ({self.end}) must not be before start ({self.start})\"\n            )\n        if (self.end - self.start).days > self.MAX_SPAN_DAYS:\n            raise ValueError(\n                f\"Range exceeds maximum span of {self.MAX_SPAN_DAYS} days\"\n            )\n\n    def contains(self, day: date) -> bool:\n        return self.start <= day <= self.end\n\n    def overlaps(self, other: 'DateRange') -> bool:\n        return self.start <= other.end and self.end >= other.start\n\n    @classmethod\n    def for_calendar_year(cls, year: int) -> 'DateRange':\n        return cls(start=date(year, 1, 1), end=date(year, 12, 31))\n```",
+      "expectations": [
+        "Recognizes this is already clean code and says so clearly and directly — does not manufacture issues to fill the review",
+        "Praises frozen=True for immutability, which prevents accidental mutation and makes the object safe to use as a dict key or in sets (aligns with Ch. 6: prefer immutability)",
+        "Praises __post_init__ validation: invariants are enforced at construction time with clear error messages, exemplifying G28 (Encapsulate Conditionals) and fail-fast design",
+        "Praises the named factory classmethod for_calendar_year() as a G30-aligned (Functions Do One Thing) readable entry point with a descriptive name (N1)",
+        "Praises small, focused methods — contains() and overlaps() each do exactly one thing with meaningful names",
+        "Frames any observation (e.g., adding __repr__ or a duration property) explicitly as an optional enhancement, not a defect"
+      ]
+    },
+    {
+      "id": "eval-14-output-arguments-temporal-coupling",
+      "prompt": "Review this Java code:\n\n```java\npublic class ReportBuilder {\n    public void addHeader(List<String> lines, String title, LocalDate reportDate) {\n        lines.add(\"=== \" + title + \" ===\");\n        lines.add(\"Generated: \" + reportDate.toString());\n        lines.add(\"\");\n    }\n\n    public void addBody(List<String> lines, List<SaleRecord> records) {\n        for (SaleRecord r : records) {\n            lines.add(r.getSku() + \": \" + r.getQuantity() + \" units @ $\" + r.getUnitPrice());\n        }\n    }\n\n    public void addFooter(List<String> lines, double grandTotal) {\n        lines.add(\"\");\n        lines.add(\"Grand Total: $\" + grandTotal);\n    }\n\n    // Callers must invoke addHeader -> addBody -> addFooter in that order.\n    // Calling addFooter before addBody produces a malformed report.\n    public String render(List<String> lines) {\n        return String.join(\"\\n\", lines);\n    }\n}\n```",
+      "expectations": [
+        "Flags F2: Output Arguments — addHeader, addBody, and addFooter all mutate a List passed in rather than building state internally or returning a value; the reader must mentally note that the argument is being written to, not read from",
+        "Suggests the object-oriented fix: the ReportBuilder should own the internal lines list and expose fluent or void mutation methods — callers should not manage the accumulator",
+        "Flags G31: Hidden Temporal Coupling — the comment 'Callers must invoke addHeader -> addBody -> addFooter in that order' reveals a sequencing constraint that is nowhere enforced by the type system",
+        "Recommends making temporal coupling explicit: each step can return an intermediate type (e.g., HeaderAdded, BodyAdded) so the compiler enforces the correct sequence and addFooter cannot be called on a BodyAdded value that skipped the header",
+        "Provides a refactored sketch where ReportBuilder accumulates lines internally via method chaining (builder.withHeader(...).withBody(...).build()) eliminating both the output argument and the hidden ordering requirement"
+      ]
+    },
+    {
+      "id": "eval-15-real-world-multiple-smells",
+      "prompt": "Review this Python code:\n\n```python\nclass ReportManager:\n    def __init__(self, db_conn, storage_client, mailer, template_name,\n                 send_email=False, compress_output=False):\n        self.db_conn = db_conn\n        self.storage_client = storage_client\n        self.mailer = mailer\n        self.template_name = template_name\n        self.send_email = send_email\n        self.compress_output = compress_output\n\n    def run(self, report_id: str):\n        # rows = self.db_conn.execute('SELECT * FROM reports_v1 WHERE id = ?', report_id)\n        rows = self.db_conn.execute('SELECT * FROM reports WHERE id = ?', report_id)\n        if not rows:\n            return None\n\n        rendered = self.storage_client.get_bucket('reports-prod').get_blob(\n            f'templates/{self.template_name}').download_as_text()\n        filled = rendered.replace('{{ROWS}}', str(rows))\n\n        if self.compress_output:\n            filled = zlib.compress(filled.encode(), 6)\n\n        url = self.storage_client.get_bucket('reports-prod').upload_blob(\n            f'output/{report_id}.html', filled)\n\n        if self.send_email:\n            self.mailer.send(\n                self.db_conn.execute('SELECT email FROM users WHERE report_id=?', report_id)[0][0],\n                'Your report is ready', url)\n\n        return url\n```",
+      "expectations": [
+        "Flags F1: Too Many Arguments — the constructor takes 6 parameters; this is a sign the class is doing too much and should be split (SRP violation: report rendering, file storage, and email delivery are three separate responsibilities)",
+        "Flags F3: Flag Arguments — send_email and compress_output are boolean flags that select fundamentally different behavior paths; each flag suggests the method is doing more than one thing",
+        "Flags G25: Magic Numbers — the compression level 6 and the hardcoded bucket name 'reports-prod' are unexplained literals; they should be named constants",
+        "Flags G36: Train Wreck / Law of Demeter — self.storage_client.get_bucket('reports-prod').get_blob(...).download_as_text() is a multi-level navigation chain that tightly couples this class to the internal structure of storage_client",
+        "Flags C5: Commented-Out Code — the old SQL query referencing reports_v1 should be deleted, not left in source; version history belongs in git",
+        "Flags Don't Return None (Ch. 7) — returning None when rows is empty forces every caller to do a null check; raise a specific exception or return a typed Optional/sentinel instead",
+        "Prioritizes issues by severity: SRP/F1 and Don't Return None as critical (breaking design), flag arguments and train wrecks as major, magic numbers and commented-out code as minor"
+      ]
     }
   ]
 }
