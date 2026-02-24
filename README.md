@@ -79,6 +79,23 @@ git clone https://github.com/ZLStas/skills.git
 cp -r skills/effective-kotlin /path/to/project/.claude/skills/
 ```
 
+## Automatic Skill Routing
+
+You don't need to know which skill to apply — the **[skill-router](./skill-router/)** meta-skill does it for you.
+
+When an AI agent receives a task, it can invoke `skill-router` first to identify the 1–2 most relevant skills based on the file, language, domain, and work type. The router then returns a ranked recommendation with rationale, so the right expertise is applied automatically.
+
+```
+User: "Review my order processing service"
+
+→ skill-router selects:
+   Primary:   domain-driven-design   — domain model design (Aggregates, Value Objects)
+   Secondary: microservices-patterns — service boundaries and inter-service communication
+   Skip:      clean-code-reviewer    — premature at design stage; apply later on implementation code
+```
+
+This means skills compose: `skill-router` acts as an orchestrator that picks the right specialist skills for the context, without requiring the user to know the library upfront.
+
 ## Skills
 
 | Skill | Description |
@@ -96,7 +113,7 @@ cp -r skills/effective-kotlin /path/to/project/.claude/skills/
 | [lean-startup](./lean-startup/) | Practices from Eric Ries' *The Lean Startup* — MVP testing, validated learning, Build-Measure-Learn loop, and pivots |
 | [microservices-patterns](./microservices-patterns/) | Expert guidance on microservices patterns from Chris Richardson's *Microservices Patterns* — decomposition, sagas, API gateways, event sourcing, CQRS, and service mesh |
 | [refactoring-ui](./refactoring-ui/) | UI design principles from *Refactoring UI* by Adam Wathan & Steve Schoger — visual hierarchy, layout, typography, and color |
-| [skill-router](./skill-router/) | Selects the 1-2 most relevant `@booklib/skills` for a given task — routes by language, domain, and work type with conflict resolution |
+| [skill-router](./skill-router/) | **Meta-skill.** Automatically selects the 1–2 most relevant skills for a given file, PR, or task — routes by language, domain, and work type with conflict resolution. Use this when the right skill isn't obvious, or let the AI invoke it automatically before applying any skill |
 | [storytelling-with-data](./storytelling-with-data/) | Data visualization and storytelling from Cole Nussbaumer Knaflic's *Storytelling with Data* — effective visuals, decluttering, and narrative structure |
 | [system-design-interview](./system-design-interview/) | System design principles from Alex Xu's *System Design Interview* — scaling, estimation, and real-world system designs |
 | [using-asyncio-python](./using-asyncio-python/) | Asyncio practices from Caleb Hattingh's *Using Asyncio in Python* — coroutines, event loop, tasks, and signal handling |
