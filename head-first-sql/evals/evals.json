@@ -1,0 +1,60 @@
+{
+  "evals": [
+    {
+      "id": "eval-01-null-comparison-and-select-star",
+      "prompt": "Review this SQL query:\n\n```sql\nSELECT *\nFROM employees\nWHERE manager_id = NULL\nAND department = 'Engineering';\n```",
+      "expectations": [
+        "Flags that `= NULL` never matches any rows — NULL comparisons must use `IS NULL` or `IS NOT NULL`, not `=` or `!=`",
+        "Flags `SELECT *` — explicit column names should be used instead to make the query self-documenting and resistant to schema changes",
+        "Suggests the corrected query: `SELECT id, name, email, department FROM employees WHERE manager_id IS NULL AND department = 'Engineering'`",
+        "Explains WHY `= NULL` fails: NULL represents an unknown value, so any comparison with NULL returns UNKNOWN (not TRUE or FALSE), causing the row to be filtered out"
+      ]
+    },
+    {
+      "id": "eval-02-where-vs-having-and-correlated-subquery",
+      "prompt": "Review this SQL query:\n\n```sql\nSELECT\n    customer_id,\n    COUNT(*) AS order_count\nFROM orders\nGROUP BY customer_id\nWHERE COUNT(*) > 5;\n```",
+      "expectations": [
+        "Flags that `WHERE COUNT(*) > 5` is invalid SQL — aggregate functions cannot appear in WHERE clauses because WHERE filters rows BEFORE aggregation happens",
+        "Explains the difference: WHERE filters individual rows before grouping; HAVING filters groups after aggregation",
+        "Suggests the corrected query using HAVING: `SELECT customer_id, COUNT(*) AS order_count FROM orders GROUP BY customer_id HAVING COUNT(*) > 5`",
+        "Notes that the query alias `order_count` is good practice — explicit aliases make result sets self-documenting"
+      ]
+    },
+    {
+      "id": "eval-03-implicit-cross-join-cartesian-product",
+      "prompt": "Review this SQL query:\n\n```sql\nSELECT orders.id, customers.name, orders.total\nFROM orders, customers\nWHERE orders.status = 'shipped';\n```",
+      "expectations": [
+        "Flags the implicit cross join: `FROM orders, customers` with no JOIN condition creates a Cartesian product — every order row is combined with every customer row, producing orders × customers rows",
+        "Explains that the query is missing the JOIN condition `orders.customer_id = customers.id`, so it returns incorrect results (each order repeated for every customer in the database)",
+        "Suggests the corrected query using explicit INNER JOIN: `SELECT o.id, c.name, o.total FROM orders o INNER JOIN customers c ON c.id = o.customer_id WHERE o.status = 'shipped'`",
+        "Notes the performance risk: Cartesian products on large tables can produce millions of rows and crash or freeze the database",
+        "Recommends using explicit JOIN … ON syntax instead of comma-separated tables in FROM"
+      ]
+    },
+    {
+      "id": "eval-04-transaction-for-multi-step-write",
+      "prompt": "Review this SQL for a bank transfer operation:\n\n```sql\nUPDATE accounts SET balance = balance - 500 WHERE id = 1;\nUPDATE accounts SET balance = balance + 500 WHERE id = 2;\n```",
+      "expectations": [
+        "Flags the missing transaction: these two UPDATE statements are not wrapped in BEGIN/COMMIT, so if the second UPDATE fails (connection drop, constraint violation, crash), account 1 loses $500 but account 2 never receives it — data is permanently inconsistent",
+        "Explains atomicity: a transaction guarantees that either both updates succeed (COMMIT) or neither takes effect (ROLLBACK)",
+        "Suggests wrapping in a transaction: `BEGIN; UPDATE accounts SET balance = balance - 500 WHERE id = 1; UPDATE accounts SET balance = balance + 500 WHERE id = 2; COMMIT;`",
+        "Notes that a check for sufficient balance before deducting should also be added (`WHERE id = 1 AND balance >= 500`) to prevent negative balances",
+        "Explains ROLLBACK: if any error occurs between BEGIN and COMMIT, the application should issue ROLLBACK to undo the partial changes"
+      ]
+    },
+    {
+      "id": "eval-05-well-written-query-recognition",
+      "prompt": "Review this SQL query:\n\n```sql\nSELECT\n    p.id          AS product_id,\n    p.name        AS product_name,\n    c.name        AS category_name,\n    COUNT(oi.id)  AS times_ordered,\n    SUM(oi.quantity * oi.unit_price) AS total_revenue\nFROM products p\nINNER JOIN categories c\n    ON c.id = p.category_id\nINNER JOIN order_items oi\n    ON oi.product_id = p.id\nINNER JOIN orders o\n    ON o.id = oi.order_id\n   AND o.status = 'completed'\nWHERE p.active = TRUE\nGROUP BY p.id, p.name, c.name\nHAVING SUM(oi.quantity * oi.unit_price) > 1000\nORDER BY total_revenue DESC\nLIMIT 20;\n```",
+      "expectations": [
+        "Recognizes this as a well-written SQL query and says so explicitly",
+        "Praises explicit column aliases (`product_id`, `category_name`, `total_revenue`) that make the result set self-documenting",
+        "Praises explicit INNER JOIN … ON syntax that clearly states the join relationships",
+        "Praises filtering inactive products in WHERE before aggregation (`WHERE p.active = TRUE`) — reduces rows processed by GROUP BY",
+        "Praises correct HAVING usage for the post-aggregation filter (`HAVING SUM(...) > 1000`)",
+        "Praises joining the status filter directly in the JOIN condition (`AND o.status = 'completed'`) which filters order_items early",
+        "Does NOT manufacture fake issues to have something to say",
+        "May offer optional suggestions (e.g., an index on `products.active` or `orders.status`, or using a CTE for readability) but clearly frames them as enhancements, not bugs"
+      ]
+    }
+  ]
+}
