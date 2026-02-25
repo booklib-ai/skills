@@ -107,6 +107,7 @@ This means skills compose: `skill-router` acts as an orchestrator that picks the
 | [design-patterns](./design-patterns/) | Apply and review GoF design patterns from *Head First Design Patterns* — creational, structural, and behavioral patterns |
 | [domain-driven-design](./domain-driven-design/) | Design and review software using patterns from Eric Evans' *Domain-Driven Design* — tactical and strategic patterns, and Ubiquitous Language |
 | [effective-python](./effective-python/) | Python best practices from Brett Slatkin's *Effective Python* (2nd Edition) — Pythonic thinking, functions, classes, concurrency, and testing |
+| [head-first-sql](./head-first-sql/) | Write and review SQL using practices from Lynn Beighley's *Head First SQL* — joins, aggregation, transactions, NULL handling, indexes, and query optimization |
 | [effective-java](./effective-java/) | Java best practices from Joshua Bloch's *Effective Java* (3rd Edition) — object creation, generics, enums, lambdas, and concurrency |
 | [effective-kotlin](./effective-kotlin/) | Best practices from Marcin Moskała's *Effective Kotlin* (2nd Ed) — safety, readability, reusability, and abstraction |
 | [kotlin-in-action](./kotlin-in-action/) | Practices from *Kotlin in Action* (2nd Ed) — functions, classes, lambdas, nullability, and coroutines |

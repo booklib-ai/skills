@@ -56,6 +56,15 @@ All 17 skills in the `@booklib/skills` library with routing metadata.
 - **Works well with:** microservices-patterns (domain model + service boundaries), clean-code-reviewer (model + code quality)
 - **Conflicts with:** clean-code-reviewer (rich models vs small functions — DDD wins for model design; clean code wins for code review)
 
+## head-first-sql
+- **Source:** *Head First SQL* by Lynn Beighley
+- **Domain:** SQL query writing and review, relational databases
+- **Language:** SQL (any RDBMS — MySQL, PostgreSQL, SQLite, SQL Server)
+- **Trigger keywords:** "SQL query", "write a query", "optimize SQL", "JOIN", "subquery", "index", "transaction", "foreign key", "normalization", "GROUP BY", "HAVING", "stored procedure", "SQL review", "query performance", "database schema", "primary key", "NULL handling", "aggregate function", "SQL best practices", "fix my SQL"
+- **Anti-triggers:** NoSQL databases, ORMs (unless the underlying SQL is visible), non-database backend code
+- **Works well with:** data-pipelines (SQL queries + pipeline orchestration), data-intensive-patterns (SQL correctness + storage internals)
+- **Conflicts with:** data-intensive-patterns (head-first-sql for application-level SQL; data-intensive-patterns for storage engine internals and distributed transactions)
+
 ## effective-java
 - **Source:** *Effective Java* (3rd Edition) by Joshua Bloch
 - **Domain:** Java best practices and idioms
