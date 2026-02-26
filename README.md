@@ -77,7 +77,7 @@ Skills are installed to `.claude/skills/` in your project (or `~/.claude/skills/
 
 ```bash
 # Clone and copy a skill directly
-git clone https://github.com/ZLStas/skills.git
+git clone https://github.com/booklib-ai/skills.git
 cp -r skills/skills/effective-kotlin /path/to/project/.claude/skills/
 ```
 
