@@ -1,6 +1,6 @@
 # 🧠 Skills
 
-18 book-grounded AI agent skills — each skill packages expert practices from a canonical programming book into reusable instructions that Claude and other AI agents can apply to code generation, code review, and design decisions.
+Book-grounded AI agent skills — each skill packages expert practices from a canonical programming book into reusable instructions that Claude and other AI agents can apply to code generation, code review, and design decisions.
 
 ```bash
 npx skills add booklib-ai/skills
