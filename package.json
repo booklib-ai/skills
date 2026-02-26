@@ -1,15 +1,22 @@
 {
   "name": "@booklib/skills",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Book knowledge distilled into structured AI skills for Claude Code and other AI assistants",
   "bin": {
-    "skills": "./bin/skills.js"
+    "skills": "bin/skills.js"
   },
-  "keywords": ["claude", "claude-code", "ai", "skills", "agent-skills"],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "skills",
+    "agent-skills"
+  ],
   "license": "MIT",
+  "homepage": "https://github.com/booklib-ai/skills#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/booklib-ai/skills.git"
+    "url": "git+https://github.com/booklib-ai/skills.git"
   },
   "engines": {
     "node": ">=16"

@@ -1,4 +1,6 @@
-.idea/
+.claude/
 .github/
-node_modules/
-*.pdf
+.idea/
+**/__pycache__/
+*.pyc
+*.png
