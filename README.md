@@ -2,29 +2,28 @@
 
 Book knowledge distilled into structured AI skills — each skill packages expert practices from a specific book into a reusable prompt that AI agents can apply to code generation, code review, and design decisions.
 
+```bash
+npx skills add booklib-ai/skills
+```
+
 Each skill is a self-contained folder with a `SKILL.md` file containing instructions and metadata that AI agents use to perform specialized tasks.
 
 ## Structure
 
 ```
-skills/
+booklib-ai/skills (repo root)
+├── skills/
+│   ├── clean-code-reviewer/
+│   │   ├── SKILL.md          # Required
+│   │   ├── examples/
+│   │   ├── references/
+│   │   ├── scripts/
+│   │   └── evals/
+│   └── [skill-name]/         # One folder per book
+│       └── ...
 ├── README.md
 ├── LICENSE
-├── skills/
-│   ├── clean-code-reviewer/          # Code review using Clean Code principles
-│   │   ├── SKILL.md
-│   │   └── evals/
-│   │       └── evals.json
-│   ├── [future-skill]/
-│   │   ├── SKILL.md
-│   │   ├── scripts/                  # Executable code (Python/Bash)
-│   │   ├── references/               # Documentation loaded into context as needed
-│   │   ├── assets/                   # Templates, icons, fonts
-│   │   └── evals/                    # Test cases for the skill
-│   │       ├── evals.json
-│   │       └── files/                # Input files for evals
-│   └── ...
-└── ...
+└── package.json
 ```
 
 ## Skill Format
@@ -55,17 +54,27 @@ Instructions for the AI agent...
 
 ## Installation
 
-### via npm (recommended)
+### via skills CLI (recommended)
 
 ```bash
-# Add a single skill to your current project
+# Install all skills globally
+npx skills add booklib-ai/skills --all -g
+
+# Install a specific skill
+npx skills add booklib-ai/skills --skill effective-kotlin
+
+# List available skills without installing
+npx skills add booklib-ai/skills --list
+```
+
+### via npm
+
+```bash
+# Install all skills globally
+npx @booklib/skills add --all --global
+
+# Install a single skill
 npx @booklib/skills add effective-kotlin
-
-# Add all skills to your current project
-npx @booklib/skills add --all
-
-# Add globally (available in all projects)
-npx @booklib/skills add --all --globalcl
 
 # List available skills
 npx @booklib/skills list
@@ -76,9 +85,8 @@ Skills are installed to `.claude/skills/` in your project (or `~/.claude/skills/
 ### Manual
 
 ```bash
-# Clone and copy a skill directly
 git clone https://github.com/booklib-ai/skills.git
-cp -r skills/skills/effective-kotlin /path/to/project/.claude/skills/
+cp -r booklib-ai-skills/skills/effective-kotlin /path/to/project/.claude/skills/
 ```
 
 ## Automatic Skill Routing
