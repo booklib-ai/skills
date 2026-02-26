@@ -7,7 +7,7 @@ const https = require('https');
 
 const args = process.argv.slice(2);
 const command = args[0];
-const skillsRoot = path.join(__dirname, '..');
+const skillsRoot = path.join(__dirname, '..', 'skills');
 
 // ─── ANSI helpers ─────────────────────────────────────────────────────────────
 const c = {

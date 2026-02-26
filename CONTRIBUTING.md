@@ -14,7 +14,7 @@ A skill is worth adding when the source book:
 ### 1. Create the folder
 
 ```
-skill-name/
+skills/skill-name/
 ├── SKILL.md          # Required
 ├── examples/
 │   ├── before.md     # Code or artifact before applying the skill
@@ -100,7 +100,7 @@ Aim for 3–5 evals per skill covering:
 ```bash
 git checkout -b skill/book-name
 # add your skill folder
-git add skill-name/
+git add skills/skill-name/
 git commit -m "feat: add skill-name skill"
 gh pr create --title "feat: add skill-name" --body "..."
 ```
