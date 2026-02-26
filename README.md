@@ -6,6 +6,8 @@ Book-grounded AI agent skills — each skill packages expert practices from a ca
 npx skills add booklib-ai/skills
 ```
 
+![Demo](demo.gif)
+
 Each skill is a self-contained folder with a `SKILL.md` file containing instructions and metadata that AI agents use to perform specialized tasks.
 
 ## Structure
