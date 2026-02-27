@@ -1,4 +1,4 @@
-# 🧠 Skills
+# Skills
 
 <p align="center">
   <img src="assets/logo.svg" width="120" alt="booklib-ai skills logo"/>
