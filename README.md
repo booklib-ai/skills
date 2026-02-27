@@ -1,5 +1,9 @@
 # 🧠 Skills
 
+<p align="center">
+  <img src="assets/logo.svg" width="120" alt="booklib-ai skills logo"/>
+</p>
+
 [![npm version](https://img.shields.io/npm/v/@booklib/skills.svg)](https://www.npmjs.com/package/@booklib/skills)
 [![npm downloads](https://img.shields.io/npm/dw/@booklib/skills.svg)](https://www.npmjs.com/package/@booklib/skills)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

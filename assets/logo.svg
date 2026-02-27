@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Background -->
+  <rect width="400" height="400" rx="72" fill="#0d1117"/>
+
+  <!-- Left book page -->
+  <path d="M88 120 L88 300 Q88 316 104 316 L192 316 L192 104 Q160 88 112 92 Q88 96 88 120Z" fill="#1f6feb"/>
+
+  <!-- Right book page -->
+  <path d="M208 104 L208 316 L296 316 Q312 316 312 300 L312 120 Q312 96 288 92 Q240 88 208 104Z" fill="#2d84f5"/>
+
+  <!-- Spine -->
+  <rect x="192" y="100" width="16" height="216" fill="#58a6ff"/>
+
+  <!-- Left page lines -->
+  <rect x="112" y="155" width="64" height="8" rx="4" fill="white" opacity="0.55"/>
+  <rect x="112" y="175" width="52" height="8" rx="4" fill="white" opacity="0.40"/>
+  <rect x="112" y="195" width="68" height="8" rx="4" fill="white" opacity="0.55"/>
+  <rect x="112" y="215" width="44" height="8" rx="4" fill="white" opacity="0.35"/>
+  <rect x="112" y="235" width="60" height="8" rx="4" fill="white" opacity="0.50"/>
+  <rect x="112" y="255" width="48" height="8" rx="4" fill="white" opacity="0.35"/>
+
+  <!-- Right page lines -->
+  <rect x="224" y="155" width="64" height="8" rx="4" fill="white" opacity="0.55"/>
+  <rect x="224" y="175" width="52" height="8" rx="4" fill="white" opacity="0.40"/>
+  <rect x="224" y="195" width="68" height="8" rx="4" fill="white" opacity="0.55"/>
+  <rect x="224" y="215" width="44" height="8" rx="4" fill="white" opacity="0.35"/>
+  <rect x="224" y="235" width="60" height="8" rx="4" fill="white" opacity="0.50"/>
+  <rect x="224" y="255" width="48" height="8" rx="4" fill="white" opacity="0.35"/>
+
+  <!-- AI sparkle (4-pointed star) -->
+  <path d="M316 82 L322 66 L328 82 L344 88 L328 94 L322 110 L316 94 L300 88 Z" fill="#f0883e"/>
+
+  <!-- Accent dots -->
+  <circle cx="348" cy="60" r="5" fill="#f0883e" opacity="0.6"/>
+  <circle cx="296" cy="58" r="4" fill="#f0883e" opacity="0.4"/>
+</svg>
