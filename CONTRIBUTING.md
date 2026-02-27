@@ -117,6 +117,19 @@ PR checklist:
 
 Open an issue titled **"Skill Request: [Book Name]"** and describe why the book would make a good skill. Community members can then pick it up.
 
+## AI disclosure
+
+If you used an AI tool to help write or review your contribution, disclose it in your PR description. This is required — not optional.
+
+**Acceptable examples:**
+- "Written primarily with Claude Code; I reviewed and tested each section manually."
+- "I used Copilot for boilerplate; the examples and evals are hand-written."
+- "No AI tools used."
+
+**Not acceptable:** submitting AI-generated content without reviewing it yourself. Skills are grounded in specific books — the AI can hallucinate citations, misattribute principles, or invent heuristic codes. You are responsible for accuracy.
+
+Trivial fixes (typos, formatting) don't need a disclosure.
+
 ## Questions
 
 Use [GitHub Discussions](../../discussions) for questions, ideas, and feedback.

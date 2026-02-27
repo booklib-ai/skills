@@ -7,6 +7,7 @@
 [![npm version](https://img.shields.io/npm/v/@booklib/skills.svg)](https://www.npmjs.com/package/@booklib/skills)
 [![npm downloads](https://img.shields.io/npm/dw/@booklib/skills.svg)](https://www.npmjs.com/package/@booklib/skills)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/booklib-ai/skills?style=flat)](https://github.com/booklib-ai/skills/stargazers)
 
 Book-grounded AI agent skills — each skill packages expert practices from a canonical programming book into reusable instructions that Claude and other AI agents can apply to code generation, code review, and design decisions.
 
@@ -120,24 +121,24 @@ This means skills compose: `skill-router` acts as an orchestrator that picks the
 
 | Skill | Description |
 |-------|-------------|
-| [animation-at-work](./skills/animation-at-work/) | Apply web animation principles from Rachel Nabors' *Animation at Work* — human perception of motion, 12 principles of animation, and performance |
-| [clean-code-reviewer](./skills/clean-code-reviewer/) | Reviews code against Robert C. Martin's *Clean Code* principles with heuristic codes (C1–C5, G1–G36, N1–N7, T1–T9) |
-| [data-intensive-patterns](./skills/data-intensive-patterns/) | Patterns for reliable, scalable, and maintainable systems from Martin Kleppmann's *Designing Data-Intensive Applications* — storage engines, replication, partitioning, and transactions |
-| [data-pipelines](./skills/data-pipelines/) | Data pipeline practices from James Densmore's *Data Pipelines Pocket Reference* — ingestion, streaming, transformation, and orchestration |
-| [design-patterns](./skills/design-patterns/) | Apply and review GoF design patterns from *Head First Design Patterns* — creational, structural, and behavioral patterns |
-| [domain-driven-design](./skills/domain-driven-design/) | Design and review software using patterns from Eric Evans' *Domain-Driven Design* — tactical and strategic patterns, and Ubiquitous Language |
-| [effective-python](./skills/effective-python/) | Python best practices from Brett Slatkin's *Effective Python* (2nd Edition) — Pythonic thinking, functions, classes, concurrency, and testing |
-| [effective-java](./skills/effective-java/) | Java best practices from Joshua Bloch's *Effective Java* (3rd Edition) — object creation, generics, enums, lambdas, and concurrency |
-| [effective-kotlin](./skills/effective-kotlin/) | Best practices from Marcin Moskała's *Effective Kotlin* (2nd Ed) — safety, readability, reusability, and abstraction |
-| [kotlin-in-action](./skills/kotlin-in-action/) | Practices from *Kotlin in Action* (2nd Ed) — functions, classes, lambdas, nullability, and coroutines |
-| [lean-startup](./skills/lean-startup/) | Practices from Eric Ries' *The Lean Startup* — MVP testing, validated learning, Build-Measure-Learn loop, and pivots |
-| [microservices-patterns](./skills/microservices-patterns/) | Expert guidance on microservices patterns from Chris Richardson's *Microservices Patterns* — decomposition, sagas, API gateways, event sourcing, CQRS, and service mesh |
-| [refactoring-ui](./skills/refactoring-ui/) | UI design principles from *Refactoring UI* by Adam Wathan & Steve Schoger — visual hierarchy, layout, typography, and color |
-| [skill-router](./skills/skill-router/) | **Meta-skill.** Automatically selects the 1–2 most relevant skills for a given file, PR, or task — routes by language, domain, and work type with conflict resolution. Use this when the right skill isn't obvious, or let the AI invoke it automatically before applying any skill |
-| [storytelling-with-data](./skills/storytelling-with-data/) | Data visualization and storytelling from Cole Nussbaumer Knaflic's *Storytelling with Data* — effective visuals, decluttering, and narrative structure |
-| [system-design-interview](./skills/system-design-interview/) | System design principles from Alex Xu's *System Design Interview* — scaling, estimation, and real-world system designs |
-| [using-asyncio-python](./skills/using-asyncio-python/) | Asyncio practices from Caleb Hattingh's *Using Asyncio in Python* — coroutines, event loop, tasks, and signal handling |
-| [web-scraping-python](./skills/web-scraping-python/) | Web scraping practices from Ryan Mitchell's *Web Scraping with Python* — BeautifulSoup, Scrapy, and data storage |
+| 🎬 [animation-at-work](./skills/animation-at-work/) | Apply web animation principles from Rachel Nabors' *Animation at Work* — human perception of motion, 12 principles of animation, and performance |
+| 🧹 [clean-code-reviewer](./skills/clean-code-reviewer/) | Reviews code against Robert C. Martin's *Clean Code* principles with heuristic codes (C1–C5, G1–G36, N1–N7, T1–T9) |
+| 🗄️ [data-intensive-patterns](./skills/data-intensive-patterns/) | Patterns for reliable, scalable, and maintainable systems from Martin Kleppmann's *Designing Data-Intensive Applications* — storage engines, replication, partitioning, and transactions |
+| 🔀 [data-pipelines](./skills/data-pipelines/) | Data pipeline practices from James Densmore's *Data Pipelines Pocket Reference* — ingestion, streaming, transformation, and orchestration |
+| 🏗️ [design-patterns](./skills/design-patterns/) | Apply and review GoF design patterns from *Head First Design Patterns* — creational, structural, and behavioral patterns |
+| 🧩 [domain-driven-design](./skills/domain-driven-design/) | Design and review software using patterns from Eric Evans' *Domain-Driven Design* — tactical and strategic patterns, and Ubiquitous Language |
+| ☕ [effective-java](./skills/effective-java/) | Java best practices from Joshua Bloch's *Effective Java* (3rd Edition) — object creation, generics, enums, lambdas, and concurrency |
+| 🛡️ [effective-kotlin](./skills/effective-kotlin/) | Best practices from Marcin Moskała's *Effective Kotlin* (2nd Ed) — safety, readability, reusability, and abstraction |
+| 🐍 [effective-python](./skills/effective-python/) | Python best practices from Brett Slatkin's *Effective Python* (2nd Edition) — Pythonic thinking, functions, classes, concurrency, and testing |
+| ⚡ [kotlin-in-action](./skills/kotlin-in-action/) | Practices from *Kotlin in Action* (2nd Ed) — functions, classes, lambdas, nullability, and coroutines |
+| 🚀 [lean-startup](./skills/lean-startup/) | Practices from Eric Ries' *The Lean Startup* — MVP testing, validated learning, Build-Measure-Learn loop, and pivots |
+| 🔧 [microservices-patterns](./skills/microservices-patterns/) | Expert guidance on microservices patterns from Chris Richardson's *Microservices Patterns* — decomposition, sagas, API gateways, event sourcing, CQRS, and service mesh |
+| 🎨 [refactoring-ui](./skills/refactoring-ui/) | UI design principles from *Refactoring UI* by Adam Wathan & Steve Schoger — visual hierarchy, layout, typography, and color |
+| 🗺️ [skill-router](./skills/skill-router/) | **Meta-skill.** Automatically selects the 1–2 most relevant skills for a given file, PR, or task — routes by language, domain, and work type with conflict resolution. Use this when the right skill isn't obvious, or let the AI invoke it automatically before applying any skill |
+| 📊 [storytelling-with-data](./skills/storytelling-with-data/) | Data visualization and storytelling from Cole Nussbaumer Knaflic's *Storytelling with Data* — effective visuals, decluttering, and narrative structure |
+| 🏛️ [system-design-interview](./skills/system-design-interview/) | System design principles from Alex Xu's *System Design Interview* — scaling, estimation, and real-world system designs |
+| 🔄 [using-asyncio-python](./skills/using-asyncio-python/) | Asyncio practices from Caleb Hattingh's *Using Asyncio in Python* — coroutines, event loop, tasks, and signal handling |
+| 🕷️ [web-scraping-python](./skills/web-scraping-python/) | Web scraping practices from Ryan Mitchell's *Web Scraping with Python* — BeautifulSoup, Scrapy, and data storage |
 
 ## License
 

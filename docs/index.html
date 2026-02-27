@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>booklib-ai/skills — Book-grounded AI agent skills</title>
+  <meta name="description" content="18 AI agent skills grounded in canonical programming books. Give your AI coding assistant expert knowledge from Clean Code, Effective Java, DDD, and more."/>
+  <meta property="og:title" content="booklib-ai/skills"/>
+  <meta property="og:description" content="Book-grounded AI agent skills for Claude Code, Cursor, Copilot, and Windsurf."/>
+  <meta property="og:image" content="https://booklib-ai.github.io/skills/logo.png"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d1a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: #818cf8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 64px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero img { width: 96px; height: 96px; margin-bottom: 24px; }
+    .hero h1 { font-size: 2.5rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.03em; }
+    .hero p {
+      font-size: 1.125rem;
+      color: #94a3b8;
+      margin-top: 16px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Install */
+    .install {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+    }
+    .install-box {
+      background: #161625;
+      border: 1px solid #2d2d4a;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.9rem;
+      color: #a5b4fc;
+      cursor: pointer;
+      user-select: all;
+    }
+    .copy-btn {
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: #4f46e5; }
+
+    /* Badges */
+    .badges {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .badges img { height: 20px; }
+
+    /* Skills grid */
+    .skills-section {
+      max-width: 900px;
+      margin: 64px auto;
+      padding: 0 24px;
+    }
+    .skills-section h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .skill-card {
+      background: #11111f;
+      border: 1px solid #1e1e35;
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .skill-card:hover {
+      border-color: #6366f1;
+      transform: translateY(-2px);
+    }
+    .skill-card .icon { font-size: 1.5rem; margin-bottom: 10px; }
+    .skill-card h3 { font-size: 0.95rem; font-weight: 600; color: #e2e8f0; margin-bottom: 6px; }
+    .skill-card p { font-size: 0.825rem; color: #64748b; line-height: 1.5; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 48px 24px;
+      color: #475569;
+      font-size: 0.875rem;
+      border-top: 1px solid #1e1e35;
+    }
+    footer a { color: #6366f1; }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <img src="../assets/logo.svg" alt="booklib-ai skills logo"/>
+  <h1>Skills</h1>
+  <p>Book-grounded AI agent skills — expert knowledge from canonical programming books, packaged for Claude Code, Cursor, Copilot, and Windsurf.</p>
+
+  <div class="install">
+    <div class="install-box" id="cmd">npx skills add booklib-ai/skills --all -g</div>
+    <button class="copy-btn" onclick="copy()">Copy</button>
+  </div>
+
+  <div class="badges">
+    <img src="https://img.shields.io/npm/v/@booklib/skills.svg" alt="npm version"/>
+    <img src="https://img.shields.io/npm/dw/@booklib/skills.svg" alt="downloads"/>
+    <img src="https://img.shields.io/github/stars/booklib-ai/skills?style=flat" alt="stars"/>
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="license"/>
+  </div>
+</section>
+
+<section class="skills-section">
+  <h2>18 skills, 18 books</h2>
+  <div class="skills-grid">
+    <div class="skill-card"><div class="icon">🎬</div><h3>animation-at-work</h3><p>Web animation principles from Rachel Nabors — motion perception, 12 animation principles, performance.</p></div>
+    <div class="skill-card"><div class="icon">🧹</div><h3>clean-code-reviewer</h3><p>Code review against Robert C. Martin's Clean Code — naming, functions, comments, classes.</p></div>
+    <div class="skill-card"><div class="icon">🗄️</div><h3>data-intensive-patterns</h3><p>Reliable, scalable systems from Martin Kleppmann — storage engines, replication, transactions.</p></div>
+    <div class="skill-card"><div class="icon">🔀</div><h3>data-pipelines</h3><p>Pipeline practices from James Densmore — ingestion, streaming, transformation, orchestration.</p></div>
+    <div class="skill-card"><div class="icon">🏗️</div><h3>design-patterns</h3><p>GoF design patterns from Head First Design Patterns — creational, structural, behavioral.</p></div>
+    <div class="skill-card"><div class="icon">🧩</div><h3>domain-driven-design</h3><p>Eric Evans' DDD — Aggregates, Value Objects, Bounded Contexts, Ubiquitous Language.</p></div>
+    <div class="skill-card"><div class="icon">☕</div><h3>effective-java</h3><p>Joshua Bloch's Effective Java — object creation, generics, enums, lambdas, concurrency.</p></div>
+    <div class="skill-card"><div class="icon">🛡️</div><h3>effective-kotlin</h3><p>Marcin Moskała's Effective Kotlin — safety, readability, reusability, abstraction.</p></div>
+    <div class="skill-card"><div class="icon">🐍</div><h3>effective-python</h3><p>Brett Slatkin's Effective Python — Pythonic thinking, functions, classes, concurrency.</p></div>
+    <div class="skill-card"><div class="icon">⚡</div><h3>kotlin-in-action</h3><p>Kotlin in Action — functions, classes, lambdas, nullability, coroutines, flows.</p></div>
+    <div class="skill-card"><div class="icon">🚀</div><h3>lean-startup</h3><p>Eric Ries' The Lean Startup — MVP testing, validated learning, Build-Measure-Learn.</p></div>
+    <div class="skill-card"><div class="icon">🔧</div><h3>microservices-patterns</h3><p>Chris Richardson — decomposition, sagas, API gateways, event sourcing, CQRS.</p></div>
+    <div class="skill-card"><div class="icon">🎨</div><h3>refactoring-ui</h3><p>Refactoring UI by Wathan &amp; Schoger — visual hierarchy, layout, typography, color.</p></div>
+    <div class="skill-card"><div class="icon">🗺️</div><h3>skill-router</h3><p><strong>Meta-skill.</strong> Automatically selects the 1–2 most relevant skills for any task.</p></div>
+    <div class="skill-card"><div class="icon">📊</div><h3>storytelling-with-data</h3><p>Cole Nussbaumer Knaflic — effective visuals, decluttering, narrative structure.</p></div>
+    <div class="skill-card"><div class="icon">🏛️</div><h3>system-design-interview</h3><p>Alex Xu — scaling, estimation, load balancing, caching, sharding, real-world designs.</p></div>
+    <div class="skill-card"><div class="icon">🔄</div><h3>using-asyncio-python</h3><p>Caleb Hattingh — coroutines, event loop, tasks, signal handling, aiohttp.</p></div>
+    <div class="skill-card"><div class="icon">🕷️</div><h3>web-scraping-python</h3><p>Ryan Mitchell — BeautifulSoup, Scrapy, Selenium, data storage, anti-detection.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>MIT License · <a href="https://github.com/booklib-ai/skills">GitHub</a> · <a href="https://github.com/booklib-ai/skills/blob/main/CONTRIBUTING.md">Contributing</a> · <a href="https://github.com/booklib-ai/skills/blob/main/AGENTS.md">Agent Setup</a></p>
+</footer>
+
+<script>
+  function copy() {
+    navigator.clipboard.writeText(document.getElementById('cmd').textContent);
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  }
+</script>
+
+</body>
+</html>
