@@ -8,6 +8,7 @@
 [![npm downloads](https://img.shields.io/npm/dw/@booklib/skills.svg)](https://www.npmjs.com/package/@booklib/skills)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/booklib-ai/skills?style=flat)](https://github.com/booklib-ai/skills/stargazers)
+[![Website](https://img.shields.io/badge/website-booklib--ai.github.io%2Fskills-6366f1)](https://booklib-ai.github.io/skills/)
 
 Book-grounded AI agent skills — each skill packages expert practices from a canonical programming book into reusable instructions that Claude and other AI agents can apply to code generation, code review, and design decisions.
 
